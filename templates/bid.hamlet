@@ -1,7 +1,14 @@
 <div class="ui container">
-    <div class="ui secondary menu">
+    <div class="ui tabular menu">
+        <a class="item active" href="@{BidR bidId}">
+            View
         <a class="item" href="@{EditBidR bidId}">
             Edit
 
 
-    #{bidPrice bid}
+    <div class="ui segment">
+        <div>
+            <strong>Price:</strong> #{bidPrice bid}
+
+        <div>
+            <strong>Item:</strong> #{show $ fromSqlKey $ bidItem bid}

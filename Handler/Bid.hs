@@ -1,6 +1,7 @@
 module Handler.Bid where
 
 import Import
+import Database.Persist.Sql (fromSqlKey)
 import qualified Model.Types as Types
 
 getBidR :: BidId -> Handler Html

@@ -1,4 +1,9 @@
-<div.ui.container>
+<div class="ui container">
+    <div class="ui tabular menu">
+        <a class="item" href="@{BidR bidId}">
+            View
+        <a class="item active" href="@{EditBidR bidId}">
+            Edit
 
   <form class="ui form" method=post action=@{EditBidR bidId} enctype=#{enctype}>
     ^{widget}
