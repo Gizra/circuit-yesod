@@ -183,7 +183,7 @@ instance Yesod App where
 instance YesodBreadcrumbs App where
   breadcrumb (BidR  _) = return ("Bid", Just HomeR)
   breadcrumb CreateBidR = return ("Create bid", Just HomeR)
-  breadcrumb (EditBidR  _) = return ("Edit bid", Just HomeR)
+  breadcrumb (EditBidR  bidId) = return ("Edit bid", Just $ BidR bidId)
   breadcrumb HomeR = return ("Home", Nothing)
   breadcrumb ProfileR = return ("Your Profile", Just HomeR)
   breadcrumb  _ = return ("home", Nothing)
