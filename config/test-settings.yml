@@ -7,3 +7,5 @@ database:
   #
   #   database: "_env:PGDATABASE:circuit-yesod_LOWER_test"
   database: circuit_test
+
+development: true
