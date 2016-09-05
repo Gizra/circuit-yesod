@@ -6,14 +6,11 @@ import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
 -- ^ Used only when in development mode.
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
-
-import Model.Types
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -26,6 +23,17 @@ data App = App
     , appHttpManager :: Manager
     , appLogger      :: Logger
     }
+
+-- @todo: Move to Model.Types (which now has a circular dependency)
+data MenuItem = MenuItem
+    { menuItemLabel :: Text
+    , menuItemRoute :: Route App
+    , menuItemAccessCallback :: Bool
+    }
+
+data MenuTypes
+    = NavbarLeft MenuItem
+    | NavbarRight MenuItem
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -73,14 +81,57 @@ instance Yesod App where
         master <- getYesod
         mmsg <- getMessage
 
+        (title, parents) <- breadcrumbs
+        muser <- maybeAuthPair
+        mcurrentRoute <- getCurrentRoute
+
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
         -- value passed to hamletToRepHtml cannot be a widget, this allows
         -- you to use normal widget features in default-layout.
 
+        let menuItems =
+                [ NavbarLeft $ MenuItem
+                    { menuItemLabel = "Home"
+                    , menuItemRoute = HomeR
+                    , menuItemAccessCallback = True
+                    }
+                , NavbarLeft $ MenuItem
+                    { menuItemLabel = "Your Profile"
+                    , menuItemRoute = ProfileR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "GitHub Login"
+                    , menuItemRoute = AuthR $ PluginR "github" ["forward"]
+                    , menuItemAccessCallback = isNothing muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Dummy Login"
+                    , menuItemRoute = AuthR LoginR
+                    , menuItemAccessCallback = (appDevelopment $ appSettings master) && isNothing muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Logout"
+                    , menuItemRoute = AuthR LogoutR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                ]
+
+        let navbarLeftMenuItems = [x | NavbarLeft x <- menuItems]
+        let navbarRightMenuItems = [x | NavbarRight x <- menuItems]
+
+        let navbarLeftFilteredMenuItems = [x | x <- navbarLeftMenuItems, menuItemAccessCallback x]
+        let navbarRightFilteredMenuItems = [x | x <- navbarRightMenuItems, menuItemAccessCallback x]
+
         pc <- widgetToPageContent $ do
-            addStylesheet $ StaticR css_bootstrap_css
+            -- Semantic UI
+            addStylesheet $ StaticR semantic_semantic_min_css
+            addScript $ StaticR semantic_sidebar_min_js
+            addScript $ StaticR semantic_transition_min_js
+            addScript $ StaticR semantic_visibility_min_js
+
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -125,6 +176,12 @@ instance Yesod App where
 
     makeLogger = return . appLogger
 
+
+instance YesodBreadcrumbs App where
+  breadcrumb HomeR      = return ("Home", Nothing)
+  breadcrumb ProfileR = return ("Your Profile", Just HomeR)
+  breadcrumb  _ = return ("home", Nothing)
+
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
@@ -153,8 +210,7 @@ instance YesodAuth App where
                 , userPassword = Nothing
                 }
 
-    -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins app = [authOpenId Claimed []] ++ extraAuthPlugins
+    authPlugins app = [] ++ extraAuthPlugins
         -- Enable authDummy login when in development mode.
         where extraAuthPlugins = [authDummy | appDevelopment $ appSettings app]
 

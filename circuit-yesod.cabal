@@ -21,8 +21,9 @@ library
                      Settings
                      Settings.StaticFiles
                      Handler.Common
-                     Handler.Home
                      Handler.Comment
+                     Handler.Home
+                     Handler.Profile
                      Model.Types
 
     if flag(dev) || flag(library-only)
