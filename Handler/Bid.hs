@@ -15,7 +15,7 @@ getBidR bidId = do
 getCreateBidR :: Handler Html
 getCreateBidR = do
     (userId, _) <- requireAuthPair
-    -- Generate the form to be displayed.
+
     (widget, enctype) <- generateFormPost $ bidForm userId
     defaultLayout $(widgetFile "create-bid")
 
@@ -37,6 +37,35 @@ postCreateBidR = do
                     ^{widget}
                     <button>Submit
             |]
+
+
+getEditBidR :: BidId -> Handler Html
+getEditBidR bidId = do
+    bid <- runDB $ get404 bidId
+    (userId, _) <- requireAuthPair
+
+    (widget, enctype) <- generateFormPost $ bidForm userId
+    defaultLayout $(widgetFile "create-bid")
+
+postEditBidR :: BidId -> Handler Html
+postEditBidR bidId = do
+    (userId, _) <- requireAuthPair
+    ((result, widget), enctype) <- runFormPost $ bidForm userId
+    case result of
+        FormSuccess bid -> do
+          _ <- runDB $ replace bidId bid
+          --   sendMessage AddMembership (Entity mid membership)
+
+          setMessage "Bid updated"
+          redirect $ BidR bidId
+        _ -> defaultLayout
+            [whamlet|
+                <p>Invalid input, let's try again.
+                <form method=post action=@{EditBidR bidId} enctype=#{enctype}>
+                    ^{widget}
+                    <button>Submit
+            |]
+
 
 bidForm :: UserId -> Form Bid
 bidForm userId = renderSematnicUiDivs $ Bid
