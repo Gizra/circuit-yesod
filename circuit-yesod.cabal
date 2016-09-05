@@ -21,7 +21,6 @@ library
                      Settings
                      Settings.StaticFiles
                      Handler.Common
-                     Handler.Comment
                      Handler.Home
                      Handler.Profile
                      Model.Types
