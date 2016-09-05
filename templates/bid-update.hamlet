@@ -1,0 +1,5 @@
+<div.ui.container>
+
+  <form class="ui form" method=post action=@{EditBidR bidId} enctype=#{enctype}>
+    ^{widget}
+    <button.ui.primary.button>Update Bid

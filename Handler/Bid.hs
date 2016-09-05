@@ -17,7 +17,7 @@ getCreateBidR = do
     (userId, _) <- requireAuthPair
 
     (widget, enctype) <- generateFormPost $ bidForm userId Nothing
-    defaultLayout $(widgetFile "create-bid")
+    defaultLayout $(widgetFile "bid-create")
 
 postCreateBidR :: Handler Html
 postCreateBidR = do
@@ -45,7 +45,7 @@ getEditBidR bidId = do
     (userId, _) <- requireAuthPair
 
     (widget, enctype) <- generateFormPost $ bidForm userId (Just bid)
-    defaultLayout $(widgetFile "create-bid")
+    defaultLayout $(widgetFile "bid-update")
 
 postEditBidR :: BidId -> Handler Html
 postEditBidR bidId = do
