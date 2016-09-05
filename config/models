@@ -6,6 +6,7 @@ User
 Sale
     name            Text
     status          SaleStatus
+    type            SaleType
     currentItem     ItemId
     created         UTCTime
     user            UserId
