@@ -26,7 +26,7 @@ Bid
     created         UTCTime
     changed         UTCTime
     bidder          UserId
-    user            Maybe UserId
+    user            UserId Maybe
     deriving        Show
 
 
