@@ -7,3 +7,4 @@
 / HomeR GET
 
 /profile ProfileR GET
+/bid/#BidId BidR GET
