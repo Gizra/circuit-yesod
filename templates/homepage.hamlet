@@ -1,3 +1,19 @@
 <div class="ui container">
-    <div class="ui center aligned segment basic">
-        Here we will see the sales
+    <div class="ui three column grid">
+        <div class="column">
+            <div class="ui segment">
+                <h2>Sales
+                <ul>
+                    $forall Entity _ sale  <- sales
+                        <li>
+                            <a href="#">#{saleName sale}
+
+
+
+        <div class="column">
+            <div class="ui segment">
+                <h2>Bids
+                    <ul>
+                        $forall Entity id bid  <- bids
+                            <li>
+                                <a href="#">#{fromSqlKey id}

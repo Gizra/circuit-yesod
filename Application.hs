@@ -140,6 +140,7 @@ migrateData pool = do
                     , bidBidder = userId1
                     , bidUser = Just userId2
                     }) pool
+
             return ()
             where
                 createUser name = User

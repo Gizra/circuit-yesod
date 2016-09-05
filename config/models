@@ -21,7 +21,7 @@ Item
     user            UserId
     deriving        Show
 Bid
-    type             BidType
+    type            BidType
     item            ItemId
     price           Int
     created         UTCTime
