@@ -22,12 +22,19 @@ instance ToJSON (Entity Bid) where
         , "bidder"    .= bidBidder bid
         ]
 
+-- instance FromJSON BidType where
+--     parseJSON (Object o) = BidType
+--         <$> o .: "type"
 
 instance FromJSON Bid where
-    -- parseJSON (Object o) = Bid
-    --     <$> o .: "title"
-    --     <*> o .: "content"
-    --     <*> o .: "user"
+    parseJSON (Object o) = Bid
+        <$> o .: "type"
+        <*> o .: "item"
+        <*> o .: "price"
+        <*> o .: "created"
+        <*> o .: "changed"
+        <*> o .: "bidder"
+        <*> o .: "user"
 
     parseJSON _ = mzero
 
