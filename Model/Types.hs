@@ -3,6 +3,7 @@ module Model.Types where
 
 import Database.Persist.TH
 import Prelude
+import Data.Aeson
 
 data SaleType = SaleTypeLive | SaleTypeMail
     deriving (Show, Eq, Enum, Bounded, Read)
