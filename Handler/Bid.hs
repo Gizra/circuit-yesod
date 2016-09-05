@@ -45,8 +45,8 @@ bidForm userId = renderSematnicUiDivs $ Bid
     <*> areq intField "Price" (Just 0)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
-    <*> pure userId
-    <*> pure Nothing
+    <*> areq (selectField bidders) (selectSettings "Bidder") Nothing
+    <*> pure (Just userId)
     where
         selectSettings label =
           FieldSettings
@@ -57,9 +57,12 @@ bidForm userId = renderSematnicUiDivs $ Bid
             , fsAttrs = [("class", "ui fluid dropdown")]
             }
         items = do
-          entities <- runDB $ selectList [] [Asc ItemLabel]
-          optionsPairs $ map (\item -> (itemLabel $ entityVal item, entityKey item)) entities
+            entities <- runDB $ selectList [] [Asc ItemLabel]
+            optionsPairs $ map (\item -> (itemLabel $ entityVal item, entityKey item)) entities
 
+        bidders = do
+            entities <- runDB $ selectList [] [Asc UserIdent]
+            optionsPairs $ map (\item -> (userIdent $ entityVal item, entityKey item)) entities
 
 
 -- @todo: Move to Utils.
