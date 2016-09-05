@@ -147,6 +147,7 @@ instance Yesod App where
 
     isAuthorized (BidR _) _ = isAuthenticated
     isAuthorized CreateBidR _ = isAuthenticated
+    isAuthorized (EditBidR _) _ = isAuthenticated
     isAuthorized HomeR _ = isAuthenticated
     isAuthorized ProfileR _ = isAuthenticated
 
@@ -181,7 +182,8 @@ instance Yesod App where
 
 instance YesodBreadcrumbs App where
   breadcrumb (BidR  _) = return ("Bid", Just HomeR)
-  breadcrumb CreateBidR = return ("Create Bid", Just HomeR)
+  breadcrumb CreateBidR = return ("Create bid", Just HomeR)
+  breadcrumb (EditBidR  _) = return ("Edit bid", Just HomeR)
   breadcrumb HomeR = return ("Home", Nothing)
   breadcrumb ProfileR = return ("Your Profile", Just HomeR)
   breadcrumb  _ = return ("home", Nothing)

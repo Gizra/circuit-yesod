@@ -16,13 +16,13 @@ getCreateBidR :: Handler Html
 getCreateBidR = do
     (userId, _) <- requireAuthPair
 
-    (widget, enctype) <- generateFormPost $ bidForm userId
+    (widget, enctype) <- generateFormPost $ bidForm userId Nothing
     defaultLayout $(widgetFile "create-bid")
 
 postCreateBidR :: Handler Html
 postCreateBidR = do
     (userId, _) <- requireAuthPair
-    ((result, widget), enctype) <- runFormPost $ bidForm userId
+    ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
           bidId <- runDB $ insert bid
@@ -44,13 +44,13 @@ getEditBidR bidId = do
     bid <- runDB $ get404 bidId
     (userId, _) <- requireAuthPair
 
-    (widget, enctype) <- generateFormPost $ bidForm userId
+    (widget, enctype) <- generateFormPost $ bidForm userId (Just bid)
     defaultLayout $(widgetFile "create-bid")
 
 postEditBidR :: BidId -> Handler Html
 postEditBidR bidId = do
     (userId, _) <- requireAuthPair
-    ((result, widget), enctype) <- runFormPost $ bidForm userId
+    ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
           _ <- runDB $ replace bidId bid
@@ -67,14 +67,14 @@ postEditBidR bidId = do
             |]
 
 
-bidForm :: UserId -> Form Bid
-bidForm userId = renderSematnicUiDivs $ Bid
-    <$> areq (selectField optionsEnum) (selectSettings "Type") (Just Types.BidTypeLive)
-    <*> areq (selectField items) (selectSettings "Item") Nothing
-    <*> areq intField "Price" (Just 0)
+bidForm :: UserId -> Maybe Bid -> Form Bid
+bidForm userId mbid = renderSematnicUiDivs $ Bid
+    <$> areq (selectField optionsEnum) (selectSettings "Type") (bidType <$> mbid)
+    <*> areq (selectField items) (selectSettings "Item") (bidItem <$> mbid)
+    <*> areq intField "Price" (bidPrice <$> mbid)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
-    <*> areq (selectField bidders) (selectSettings "Bidder") Nothing
+    <*> areq (selectField bidders) (selectSettings "Bidder") (bidBidder <$> mbid)
     <*> pure (Just userId)
     where
         selectSettings label =
