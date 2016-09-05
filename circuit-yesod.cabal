@@ -91,6 +91,8 @@ library
                  , case-insensitive
                  , wai
 
+                 , resource-pool
+
 executable         circuit-yesod
     if flag(library-only)
         Buildable: False
