@@ -1,2 +1,10 @@
 <div class="ui container">
     Hi <strong><span class="username">#{userIdent user}</span></strong>!
+
+    <div class="ui segment">
+        <h2>
+            Your Bids
+        <ul>
+            $forall Entity id _  <- bids
+                <li>
+                    <a href="@{BidR id}">#{fromSqlKey id}
