@@ -1,7 +1,6 @@
 module Handler.RestfulBid where
 
-import           Data.Aeson
-import qualified Data.HashMap.Strict  as HM (insert)
+import qualified Data.HashMap.Strict as HM (insert)
 import           Import
 
 

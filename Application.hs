@@ -37,6 +37,7 @@ import Handler.Bid
 import Handler.Common
 import Handler.Home
 import Handler.Profile
+import Handler.RestfulBid
 import Handler.SseReceive
 
 -- This line actually creates our YesodDispatch instance. It is the second half
