@@ -7,4 +7,8 @@
 / HomeR GET
 
 /profile ProfileR GET
+
+/add/bid CreateBidR GET POST
+
 /bid/#BidId BidR GET
+/bid/#BidId/edit EditBidR GET POST

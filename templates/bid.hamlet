@@ -1,2 +1,7 @@
 <div class="ui container">
+    <div class="ui secondary menu">
+        <a class="item" href="@{EditBidR bidId}">
+            Edit
+
+
     #{bidPrice bid}

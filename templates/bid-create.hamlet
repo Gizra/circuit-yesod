@@ -1,0 +1,5 @@
+<div.ui.container>
+
+  <form class="ui form" method=post action=@{CreateBidR} enctype=#{enctype}>
+    ^{widget}
+    <button.ui.primary.button>Create Bid
