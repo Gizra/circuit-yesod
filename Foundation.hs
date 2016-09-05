@@ -4,14 +4,13 @@ import Import.NoFoundation
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
+import Yesod.Auth.Dummy
+-- ^ Used only when in development mode.
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
-
-import Model.Types
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -24,6 +23,17 @@ data App = App
     , appHttpManager :: Manager
     , appLogger      :: Logger
     }
+
+-- @todo: Move to Model.Types (which now has a circular dependency)
+data MenuItem = MenuItem
+    { menuItemLabel :: Text
+    , menuItemRoute :: Route App
+    , menuItemAccessCallback :: Bool
+    }
+
+data MenuTypes
+    = NavbarLeft MenuItem
+    | NavbarRight MenuItem
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -71,14 +81,52 @@ instance Yesod App where
         master <- getYesod
         mmsg <- getMessage
 
+        (title, parents) <- breadcrumbs
+        muser <- maybeAuthPair
+        mcurrentRoute <- getCurrentRoute
+
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
         -- value passed to hamletToRepHtml cannot be a widget, this allows
         -- you to use normal widget features in default-layout.
 
+        let menuItems =
+                [ NavbarLeft $ MenuItem
+                    { menuItemLabel = "Home"
+                    , menuItemRoute = HomeR
+                    , menuItemAccessCallback = True
+                    }
+                , NavbarLeft $ MenuItem
+                    { menuItemLabel = "Your Profile"
+                    , menuItemRoute = ProfileR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Dummy Login"
+                    , menuItemRoute = AuthR LoginR
+                    , menuItemAccessCallback = (appDevelopment $ appSettings master) && isNothing muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Logout"
+                    , menuItemRoute = AuthR LogoutR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                ]
+
+        let navbarLeftMenuItems = [x | NavbarLeft x <- menuItems]
+        let navbarRightMenuItems = [x | NavbarRight x <- menuItems]
+
+        let navbarLeftFilteredMenuItems = [x | x <- navbarLeftMenuItems, menuItemAccessCallback x]
+        let navbarRightFilteredMenuItems = [x | x <- navbarRightMenuItems, menuItemAccessCallback x]
+
         pc <- widgetToPageContent $ do
-            addStylesheet $ StaticR css_bootstrap_css
+            -- Semantic UI
+            addStylesheet $ StaticR semantic_semantic_min_css
+            addScript $ StaticR semantic_sidebar_min_js
+            addScript $ StaticR semantic_transition_min_js
+            addScript $ StaticR semantic_visibility_min_js
+
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -86,11 +134,18 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
-    isAuthorized (AuthR _) _ = return Authorized
+    isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
-    -- Default to Authorized for now.
-    isAuthorized _ _ = return Authorized
+    isAuthorized (StaticR _) _ = return Authorized
+
+    isAuthorized (AuthR LogoutR) _ = isAuthenticated
+    isAuthorized (AuthR _) _ = do
+        mu <- maybeAuthId
+        return $ case mu of
+            Nothing -> Authorized
+            Just _ -> Unauthorized "As a logged in user, you cannot re-login. You must Logout first."
+    isAuthorized ProfileR _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -120,6 +175,12 @@ instance Yesod App where
 
     makeLogger = return . appLogger
 
+
+instance YesodBreadcrumbs App where
+  breadcrumb HomeR      = return ("Home", Nothing)
+  breadcrumb ProfileR = return ("Your Profile", Just HomeR)
+  breadcrumb  _ = return ("home", Nothing)
+
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
@@ -148,10 +209,21 @@ instance YesodAuth App where
                 , userPassword = Nothing
                 }
 
-    -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins _ = [authOpenId Claimed []]
+    authPlugins app = [] ++ extraAuthPlugins
+        -- Enable authDummy login when in development mode.
+        where extraAuthPlugins = [authDummy | appDevelopment $ appSettings app]
+
+
 
     authHttpManager = getHttpManager
+
+-- | Access function to determine if a user is logged in.
+isAuthenticated :: Handler AuthResult
+isAuthenticated = do
+    muid <- maybeAuthId
+    return $ case muid of
+        Nothing -> Unauthorized "You must login to access this page"
+        Just _ -> Authorized
 
 instance YesodAuthPersist App
 

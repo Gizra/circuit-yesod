@@ -22,7 +22,7 @@ library
                      Settings.StaticFiles
                      Handler.Common
                      Handler.Home
-                     Handler.Comment
+                     Handler.Profile
                      Model.Types
 
     if flag(dev) || flag(library-only)
@@ -104,8 +104,7 @@ executable         circuit-yesod
 test-suite test
     type:              exitcode-stdio-1.0
     main-is:           Spec.hs
-    other-modules:     Handler.CommentSpec
-                       Handler.CommonSpec
+    other-modules:     Handler.CommonSpec
                        Handler.HomeSpec
                        TestImport
     hs-source-dirs:    test
@@ -130,6 +129,7 @@ test-suite test
 
     build-depends: base
                  , circuit-yesod
+                 , yesod-auth
                  , yesod-test >= 1.5.2 && < 1.6
                  , yesod-core
                  , yesod
