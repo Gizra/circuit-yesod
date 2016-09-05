@@ -9,6 +9,7 @@ import ClassyPrelude.Yesod   as Import hiding (Handler)
 import ClassyPrelude.Yesod   as Import
 #endif
 
+import Database.Persist.Sql (fromSqlKey)
 import Model                 as Import
 import Settings              as Import
 import Settings.StaticFiles  as Import

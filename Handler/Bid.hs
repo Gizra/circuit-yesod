@@ -1,8 +1,10 @@
 module Handler.Bid where
 
-import Import
-import Database.Persist.Sql (fromSqlKey)
+import           Import
+import           Database.Persist.Sql (fromSqlKey)
 import qualified Model.Types as Types
+import           Utils.ServerSentEvent
+import           Utils.ServerSentEvent.Data
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do
@@ -26,11 +28,11 @@ postCreateBidR = do
     ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
-          bidId <- runDB $ insert bid
-          --   sendMessage AddMembership (Entity mid membership)
+            bidId <- runDB $ insert bid
+            sendMessage CreateBid (Entity bidId bid)
 
-          setMessage "Bid saved"
-          redirect $ BidR bidId
+            setMessage "Bid saved"
+            redirect $ BidR bidId
         _ -> defaultLayout
             [whamlet|
                 <p>Invalid input, let's try again.
@@ -54,11 +56,10 @@ postEditBidR bidId = do
     ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
-          _ <- runDB $ replace bidId bid
-          --   sendMessage AddMembership (Entity mid membership)
+            _ <- runDB $ replace bidId bid
 
-          setMessage "Bid updated"
-          redirect $ BidR bidId
+            setMessage "Bid updated"
+            redirect $ BidR bidId
         _ -> defaultLayout
             [whamlet|
                 <p>Invalid input, let's try again.

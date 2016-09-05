@@ -1,7 +1,10 @@
 module Foundation where
 
 import Import.NoFoundation
+import qualified Data.CaseInsensitive as CI
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import qualified Data.Text.Encoding as TE
+import Network.Wai.EventSource
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
@@ -9,8 +12,8 @@ import Yesod.Auth.Dummy
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
-import qualified Data.CaseInsensitive as CI
-import qualified Data.Text.Encoding as TE
+import Utils.ServerSentEvent.Data
+
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -22,6 +25,7 @@ data App = App
     , appConnPool    :: ConnectionPool -- ^ Database connection pool.
     , appHttpManager :: Manager
     , appLogger      :: Logger
+    , appServerEvent :: (Chan ServerEvent)
     }
 
 -- @todo: Move to Model.Types (which now has a circular dependency)
@@ -127,7 +131,12 @@ instance Yesod App where
             addScript $ StaticR semantic_transition_min_js
             addScript $ StaticR semantic_visibility_min_js
 
+            -- Toastr
+            addStylesheet $ StaticR toastr_toastr_min_css
+            addScript $ StaticR toastr_toastr_min_js
+
             $(widgetFile "default-layout")
+            $(widgetFile "sse-receive")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- The page to be redirected to when authentication is required.
@@ -137,6 +146,7 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
+    isAuthorized SseReceiveR _ = return Authorized
 
     isAuthorized (AuthR LogoutR) _ = isAuthenticated
     isAuthorized (AuthR _) _ = do

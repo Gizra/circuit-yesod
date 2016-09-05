@@ -12,3 +12,5 @@
 
 /bid/#BidId BidR GET
 /bid/#BidId/edit EditBidR GET POST
+
+/sse-receive SseReceiveR GET

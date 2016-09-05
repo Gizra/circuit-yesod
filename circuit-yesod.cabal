@@ -24,7 +24,10 @@ library
                      Handler.Common
                      Handler.Home
                      Handler.Profile
+                     Handler.SseReceive
                      Model.Types
+                     Utils.ServerSentEvent
+                     Utils.ServerSentEvent.Data
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

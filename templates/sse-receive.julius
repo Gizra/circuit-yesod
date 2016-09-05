@@ -1,0 +1,15 @@
+// Set up the receiving end.
+var src = new EventSource("@{SseReceiveR}");
+
+src.addEventListener('#{toJSON CreateBid}', function(msg) {
+  updateServerSentEvent(msg);
+});
+
+src.onmessage = function(msg) {
+  updateServerSentEvent(msg);
+};
+
+updateServerSentEvent = function(msg) {
+  var data = JSON.parse(msg.data);
+  toastr.success('Bid ID ' + data.id + ' creatd by bidder ID ' + data.bidder);
+};
