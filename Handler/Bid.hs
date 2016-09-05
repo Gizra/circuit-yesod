@@ -2,9 +2,7 @@ module Handler.Bid where
 
 import           Import
 import           Database.Persist.Sql (fromSqlKey)
-import qualified Model.Types as Types
 import           Utils.ServerSentEvent
-import           Utils.ServerSentEvent.Data
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do

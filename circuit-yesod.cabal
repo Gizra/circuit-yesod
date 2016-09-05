@@ -26,8 +26,7 @@ library
                      Handler.Profile
                      Handler.SseReceive
                      Model.Types
-                     Utils.ServerSentEvent
-                     Utils.ServerSentEvent.Data
+                     Utils.ServerSentEvent                     
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

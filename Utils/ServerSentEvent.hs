@@ -4,7 +4,6 @@ module Utils.ServerSentEvent
 
 import Data.Aeson.Encode (encodeToBuilder)
 import Network.Wai.EventSource
-import Utils.ServerSentEvent.Data
 import Import
 
 

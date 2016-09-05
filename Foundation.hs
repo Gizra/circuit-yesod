@@ -12,7 +12,6 @@ import Yesod.Auth.Dummy
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
-import Utils.ServerSentEvent.Data
 
 
 -- | The foundation datatype for your application. This can be a good place to
@@ -104,6 +103,11 @@ instance Yesod App where
                 , NavbarLeft $ MenuItem
                     { menuItemLabel = "Your Profile"
                     , menuItemRoute = ProfileR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                , NavbarLeft $ MenuItem
+                    { menuItemLabel = "Create Bid"
+                    , menuItemRoute = CreateBidR
                     , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
