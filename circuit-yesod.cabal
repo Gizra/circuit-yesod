@@ -104,8 +104,7 @@ executable         circuit-yesod
 test-suite test
     type:              exitcode-stdio-1.0
     main-is:           Spec.hs
-    other-modules:     Handler.CommentSpec
-                       Handler.CommonSpec
+    other-modules:     Handler.CommonSpec
                        Handler.HomeSpec
                        TestImport
     hs-source-dirs:    test
