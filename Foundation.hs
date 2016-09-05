@@ -134,12 +134,17 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
-    isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
 
+    isAuthorized (AuthR LogoutR) _ = isAuthenticated
+    isAuthorized (AuthR _) _ = do
+        mu <- maybeAuthId
+        return $ case mu of
+            Nothing -> Authorized
+            Just _ -> Unauthorized "As a logged in user, you cannot re-login. You must Logout first."
     isAuthorized ProfileR _ = isAuthenticated
 
     -- This function creates static content files in the static folder
