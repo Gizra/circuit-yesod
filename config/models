@@ -6,7 +6,7 @@ User
 Sale
     name            Text
     status          SaleStatus
-    type             SaleType
+    type            SaleType
     currentItem     ItemId Maybe -- When creating the sale, item still doesn't exists.
     created         UTCTime
     user            UserId
