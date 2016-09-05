@@ -179,6 +179,7 @@ instance Yesod App where
 
 
 instance YesodBreadcrumbs App where
+  breadcrumb (BidR  _)     = return ("Bid", Just HomeR)
   breadcrumb HomeR      = return ("Home", Nothing)
   breadcrumb ProfileR = return ("Your Profile", Just HomeR)
   breadcrumb  _ = return ("home", Nothing)

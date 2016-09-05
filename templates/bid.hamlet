@@ -1,0 +1,2 @@
+<div class="ui container">
+    #{bidPrice bid}
