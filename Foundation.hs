@@ -164,6 +164,7 @@ instance Yesod App where
     isAuthorized (EditBidR _) _ = isAuthenticated
     isAuthorized HomeR _ = isAuthenticated
     isAuthorized ProfileR _ = isAuthenticated
+    isAuthorized (RestfulBidR _) _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows

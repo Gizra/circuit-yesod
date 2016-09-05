@@ -23,6 +23,13 @@ instance ToJSON (Entity Bid) where
         ]
 
 
+instance FromJSON Bid where
+    -- parseJSON (Object o) = Bid
+    --     <$> o .: "title"
+    --     <*> o .: "content"
+    --     <*> o .: "user"
+
+    parseJSON _ = mzero
 
 -- @todo: Can this be in Model.Types ?
 data SseEventName = BidCreate | BidEdit

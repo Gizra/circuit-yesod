@@ -14,3 +14,5 @@
 /bid/#BidId/edit EditBidR GET POST
 
 /sse-receive SseReceiveR GET
+
+/api/v1.0/bids/#BidId RestfulBidR GET PUT DELETE
