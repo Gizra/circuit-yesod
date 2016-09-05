@@ -1,6 +1,7 @@
 module Handler.Bid where
 
 import Import
+import qualified Model.Types as Types
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do
@@ -10,8 +11,16 @@ getBidR bidId = do
         setTitle "Bid #"
         $(widgetFile "bid")
 
-postBidR :: Handler Html
-postBidR = do
+
+getCreateBidR :: Handler Html
+getCreateBidR = do
+    (userId, _) <- requireAuthPair
+    -- Generate the form to be displayed.
+    (widget, enctype) <- generateFormPost $ bidForm userId
+    defaultLayout $(widgetFile "create-bid")
+
+postCreateBidR :: Handler Html
+postCreateBidR = do
     (userId, _) <- requireAuthPair
     ((result, widget), enctype) <- runFormPost $ bidForm userId
     case result of
@@ -24,16 +33,16 @@ postBidR = do
         _ -> defaultLayout
             [whamlet|
                 <p>Invalid input, let's try again.
-                <form method=post action=@{BidR} enctype=#{enctype}>
+                <form method=post action=@{CreateBidR} enctype=#{enctype}>
                     ^{widget}
                     <button>Submit
             |]
 
-bidForm :: UserId -> Form GroupMembership
+bidForm :: UserId -> Form Bid
 bidForm userId = renderSematnicUiDivs $ Bid
-    <$> areq (selectField optionsEnum) (selectSettings "Type") BidTypeLive
+    <$> areq (selectField optionsEnum) (selectSettings "Type") (Just Types.BidTypeLive)
     <*> areq (selectField items) (selectSettings "Item") Nothing
-    <*> areq intField "Price" 0
+    <*> areq intField "Price" (Just 0)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
     <*> pure userId
@@ -48,7 +57,7 @@ bidForm userId = renderSematnicUiDivs $ Bid
             , fsAttrs = [("class", "ui fluid dropdown")]
             }
         items = do
-          entities <- runDB $ selectList [] [ASC ItemLabel]
+          entities <- runDB $ selectList [] [Asc ItemLabel]
           optionsPairs $ map (\item -> (itemLabel $ entityVal item, entityKey item)) entities
 
 

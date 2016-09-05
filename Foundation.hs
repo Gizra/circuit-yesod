@@ -146,6 +146,7 @@ instance Yesod App where
             Just _ -> Unauthorized "As a logged in user, you cannot re-login. You must Logout first."
 
     isAuthorized (BidR _) _ = isAuthenticated
+    isAuthorized CreateBidR _ = isAuthenticated
     isAuthorized HomeR _ = isAuthenticated
     isAuthorized ProfileR _ = isAuthenticated
 
@@ -179,8 +180,9 @@ instance Yesod App where
 
 
 instance YesodBreadcrumbs App where
-  breadcrumb (BidR  _)     = return ("Bid", Just HomeR)
-  breadcrumb HomeR      = return ("Home", Nothing)
+  breadcrumb (BidR  _) = return ("Bid", Just HomeR)
+  breadcrumb CreateBidR = return ("Create Bid", Just HomeR)
+  breadcrumb HomeR = return ("Home", Nothing)
   breadcrumb ProfileR = return ("Your Profile", Just HomeR)
   breadcrumb  _ = return ("home", Nothing)
 
