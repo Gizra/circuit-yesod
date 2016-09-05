@@ -7,6 +7,7 @@
 ## Installation
 
 1. Download and install local copies of all the libraries needed by using [the Stack tool](https://github.com/commercialhaskell/stack/):
+ 
     ```
     stack install yesod-bin cabal-install --install-ghc && stack build
     ```    
