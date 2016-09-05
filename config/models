@@ -6,8 +6,8 @@ User
 Sale
     name            Text
     status          SaleStatus
-    type            SaleType
-    currentItem     ItemId
+    type             SaleType
+    currentItem     ItemId Maybe -- When creating the sale, item still doesn't exists.
     created         UTCTime
     user            UserId
     deriving        Show
@@ -25,9 +25,9 @@ Bid
     item            ItemId
     price           Int
     created         UTCTime
-    changed         UTCTime
+    changed         UTCTime Maybe
     bidder          UserId
     user            UserId Maybe
     deriving        Show
-    
+
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)

@@ -30,6 +30,7 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
 
+import qualified Model.Types as Types
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
@@ -75,8 +76,78 @@ makeFoundation appSettings = do
     -- Perform database migration using our application's logging settings.
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
 
+    _ <- migrateData pool
+
     -- Return the foundation
     return $ mkFoundation pool
+
+
+-- migrateData :: Pool SqlBackend -> IO ()
+migrateData pool = do
+    -- Migrate data only if "admin" is missing.
+    maybeUser <- runSqlPool (getBy $ UniqueUser "admin") pool
+    case maybeUser of
+        Just (Entity _ _) -> do
+            putStrLn "---- Skipped migration"
+            return ()
+
+        Nothing -> do
+            currentTime <- getCurrentTime
+
+            -- User
+            userId1 <- runSqlPool (insert $ createUser "admin") pool
+            userId2 <- runSqlPool (insert $ createUser "demo")  pool
+            userId3 <- runSqlPool (insert $ createUser "luli")  pool
+
+            -- Sale
+            sale1 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
+            sale2 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
+            sale3 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusPaused Types.SaleTypeLive Nothing currentTime userId2) pool
+            sale4 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusClosed Types.SaleTypeLive Nothing currentTime userId3) pool
+
+            -- Item
+            item1 <- runSqlPool (insert $ Item sale1 "Item1 - Sale1" 10 10 100 currentTime userId1) pool
+            item2 <- runSqlPool (insert $ Item sale1 "Item2 - Sale1" 20 20 200 currentTime userId1) pool
+            item3 <- runSqlPool (insert $ Item sale2 "Item2 - Sale2" 50 50 500 currentTime userId2) pool
+
+            -- Bid
+            bid1 <- runSqlPool (insert $ Bid
+                    { bidType = Types.BidTypeLive
+                    , bidItem = item1
+                    , bidPrice = 50
+                    , bidCreated = currentTime
+                    , bidChanged = Nothing
+                    , bidBidder = userId1
+                    , bidUser = Nothing
+                    }) pool
+
+            bid2 <- runSqlPool (insert $ Bid
+                    { bidType = Types.BidTypeLive
+                    , bidItem = item2
+                    , bidPrice = 100
+                    , bidCreated = currentTime
+                    , bidChanged = Nothing
+                    , bidBidder = userId1
+                    , bidUser = Just userId2
+                    }) pool
+
+            bid3 <- runSqlPool (insert $ Bid
+                    { bidType = Types.BidTypeMail
+                    , bidItem = item2
+                    , bidPrice = 100
+                    , bidCreated = currentTime
+                    , bidChanged = Nothing
+                    , bidBidder = userId1
+                    , bidUser = Just userId2
+                    }) pool
+
+            return ()
+            where
+                createUser name = User
+                        { userIdent = name
+                        , userPassword = Nothing
+                        }
+
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
 -- applying some additional middlewares.
