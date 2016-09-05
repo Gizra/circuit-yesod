@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/Gizra/yesoders.svg?branch=master)](https://travis-ci.org/Gizra/yesoders)
+[![Build Status](https://travis-ci.org/Gizra/circuit-yesod.svg?branch=master)](https://travis-ci.org/Gizra/circuit-yesod)
 
-# Yesoders
+# Circuit - Yesod
 
-> A site for [Yesod](http://www.yesodweb.com/) developers and enthusiastics
+> Backend site for online auctions
 
 ## Installation
 
