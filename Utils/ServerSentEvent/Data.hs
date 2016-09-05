@@ -5,9 +5,10 @@ module Utils.ServerSentEvent.Data
 import Import.NoFoundation
 
 -- @todo: Can this be in Model.Types ?
-data SseEventName = CreateBid
+data SseEventName = BidCreate | BidEdit
     deriving (Show, Eq, Enum, Bounded, Read)
 
 -- @todo: Try to derive generic
 instance ToJSON (SseEventName) where
-    toJSON CreateBid = "CreateBid"
+    toJSON BidCreate = "BidCreate"
+    toJSON BidEdit = "BidEdit"

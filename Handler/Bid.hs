@@ -29,7 +29,7 @@ postCreateBidR = do
     case result of
         FormSuccess bid -> do
             bidId <- runDB $ insert bid
-            sendMessage CreateBid (Entity bidId bid)
+            sendMessage BidCreate (Entity bidId bid)
 
             setMessage "Bid saved"
             redirect $ BidR bidId
@@ -58,6 +58,7 @@ postEditBidR bidId = do
         FormSuccess bid -> do
             _ <- runDB $ replace bidId bid
 
+            sendMessage BidEdit (Entity bidId bid)
             setMessage "Bid updated"
             redirect $ BidR bidId
         _ -> defaultLayout
