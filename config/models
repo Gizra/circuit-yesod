@@ -3,6 +3,34 @@ User
     password Text Maybe
     UniqueUser ident
     deriving Typeable
+Sale
+    name            Text
+    status          SaleStatus
+    currentItem     ItemId
+    created         UTCTime
+    user            UserId
+    deriving        Show
+Item
+    sale            SaleId
+    label           Text
+    minimumPrice    Int
+    startPrice      Int
+    currentPrice    Int
+    created         UTCTime
+    user            UserId
+    deriving        Show
+Bid
+    type            BidType
+    item            ItemId
+    price           Int
+    created         UTCTime
+    changed         UTCTime
+    bidder          UserId
+    user            Maybe UserId
+    deriving        Show
+
+
+
 Email
     email Text
     userId UserId Maybe
