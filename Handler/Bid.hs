@@ -8,8 +8,9 @@ getBidR :: BidId -> Handler Html
 getBidR bidId = do
     bid <- runDB $ get404 bidId
     defaultLayout $ do
-        setTitle . toHtml $ fromSqlKey bidId
-        $(widgetFile "bid")
+      setTitle . toHtml $ "Bid #" ++ bidId'
+      $(widgetFile "bid") where
+        bidId' = show $ fromSqlKey bidId
 
 
 getCreateBidR :: Handler Html
