@@ -93,10 +93,8 @@ bidForm userId mbid = renderSematnicUiDivs $ Bid
             entities <- runDB $ selectList [] [Asc UserIdent]
             optionsPairs $ map (\item -> (userIdent $ entityVal item, entityKey item)) entities
 
-        priceField = checkBool (> 0) errorMessage intField
-          where
-            errorMessage :: Text
-            errorMessage = "Price must be a positive integer."
+        priceField = checkBool (> 0) errorMessage intField where
+            errorMessage = "Price must be a positive integer." :: Text
 
 
 
