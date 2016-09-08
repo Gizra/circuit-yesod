@@ -66,7 +66,6 @@ updateBid :: Key Bid -> Bid -> Handler Bool
 updateBid bidId bid = do
     let validations =
             [ validateBidPrice $ bidPrice bid
-            , validateBidPrice' $ bidPrice bid
             ]
     let lefts' = lefts validations
     if (not $ null lefts')
@@ -80,12 +79,6 @@ validateBidPrice :: Int -> Either Text Int
 validateBidPrice price =
     if (price <= 0)
         then Left "Price should be above 0"
-        else Right price
-
-validateBidPrice' :: Int -> Either Text Int
-validateBidPrice' price =
-    if (price <= 10)
-        then Left "Price should be above 10"
         else Right price
 
 bidForm :: UserId -> Maybe Bid -> Form Bid
