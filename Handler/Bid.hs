@@ -53,21 +53,32 @@ postEditBidR bidId = do
     ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
-            _ <- runDB $ replace bidId bid
+            updateRes <- updateBid bidId bid
+            case updateRes of
+                Right _ -> do
+                    sendMessage BidEdit (Entity bidId bid)
+                    setMessage "Bid updated"
+                    redirect $ BidR bidId
+                Left errorMessages -> do
+                    defaultLayout $(widgetFile "bid-update")
 
-            sendMessage BidEdit (Entity bidId bid)
-            setMessage "Bid updated"
-            redirect $ BidR bidId
         _ -> do
             setMessage "Saving failed."
             defaultLayout $(widgetFile "bid-update")
 
+updateBid :: Key Bid -> Bid -> Handler (Either [Text] ())
+updateBid bidId bid = do
+    if (bidPrice bid <= 0)
+        then return $ Left ["Price above 0", "foo"]
+        else do
+            _ <- runDB $ replace bidId bid
+            return $ Right ()
 
 bidForm :: UserId -> Maybe Bid -> Form Bid
 bidForm userId mbid = renderSematnicUiDivs $ Bid
     <$> areq (selectField optionsEnum) (selectSettings "Type") (bidType <$> mbid)
     <*> areq (selectField items) (selectSettings "Item") (bidItem <$> mbid)
-    <*> areq priceField "Price" (bidPrice <$> mbid)
+    <*> areq intField "Price" (bidPrice <$> mbid)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
     <*> areq (selectField bidders) (selectSettings "Bidder") (bidBidder <$> mbid)
@@ -88,9 +99,6 @@ bidForm userId mbid = renderSematnicUiDivs $ Bid
         bidders = do
             entities <- runDB $ selectList [] [Asc UserIdent]
             optionsPairs $ map (\item -> (userIdent $ entityVal item, entityKey item)) entities
-
-        priceField = checkBool (> 0) errorMessage intField where
-            errorMessage = "Price must be a positive integer." :: Text
 
 
 
