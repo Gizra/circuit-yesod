@@ -58,13 +58,9 @@ postEditBidR bidId = do
             sendMessage BidEdit (Entity bidId bid)
             setMessage "Bid updated"
             redirect $ BidR bidId
-        _ -> defaultLayout
-            [whamlet|
-                <p>Invalid input, let's try again.
-                <form method=post action=@{EditBidR bidId} enctype=#{enctype}>
-                    ^{widget}
-                    <button>Submit
-            |]
+        _ -> do
+            setMessage "Saving failed."
+            defaultLayout $(widgetFile "bid-update")
 
 
 bidForm :: UserId -> Maybe Bid -> Form Bid
