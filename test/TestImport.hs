@@ -9,6 +9,7 @@ import Database.Persist      as X hiding (get)
 import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation            as X
 import Model                 as X
+import Model.Types           as X
 import Test.Hspec            as X
 import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (useEnv, loadYamlSettings)
@@ -77,20 +78,21 @@ createUser ident = do
 -- | Create a Sale.
 createSale :: Key User -> Text -> SaleStatus -> YesodExample App (Entity Sale)
 createSale uid name status = do
-    currentTime <- getCurrentTime
-    return $ insertEntity $ Sale
+    currentTime <- liftIO getCurrentTime
+    runDB $ insertEntity Sale
         { saleName = name
         , saleStatus = status
         , saleType = SaleTypeLive
         , saleCurrentItem = Nothing
-        , saleCreated = getCurrentTime
+        , saleCreated = currentTime
+        , saleUser = uid
         }
 
 -- | Create an Item.
-createItem :: Key User -> Text -> Int -> Int -> Int -> YesodExample App (Entity Sale)
+createItem :: Key User -> Key Sale -> Text -> Int -> Int -> Int -> YesodExample App (Entity Item)
 createItem uid saleId name minimumPrice startPrice currentPrice = do
-    currentTime <- getCurrentTime
-    return $ insertEntity $ Sale
+    currentTime <- liftIO getCurrentTime
+    runDB $ insertEntity Item
         { itemSale = saleId
         , itemLabel = name
         , itemMinimumPrice = minimumPrice
@@ -101,11 +103,11 @@ createItem uid saleId name minimumPrice startPrice currentPrice = do
         }
 
 -- | Create a Bid
-createBid :: Key User -> YesodExample App (Entity Bid)
+createBid :: Key User -> Key Item -> Int -> YesodExample App (Entity Bid)
 createBid uid itemId price = do
-    currentTime <- getCurrentTime
-    return $ insertEntity $ Bid
-        { bidType = Types.BidTypeLive
+    currentTime <- liftIO getCurrentTime
+    runDB $ insertEntity Bid
+        { bidType = BidTypeLive
         , bidItem = itemId
         , bidPrice = price
         , bidCreated = currentTime
