@@ -73,3 +73,43 @@ createUser ident = do
         { userIdent = ident
         , userPassword = Nothing
         }
+
+-- | Create a Sale.
+createSale :: Key User -> Text -> SaleStatus -> YesodExample App (Entity Sale)
+createSale uid name status = do
+    currentTime <- getCurrentTime
+    return $ insertEntity $ Sale
+        { saleName = name
+        , saleStatus = status
+        , saleType = SaleTypeLive
+        , saleCurrentItem = Nothing
+        , saleCreated = getCurrentTime
+        }
+
+-- | Create an Item.
+createItem :: Key User -> Text -> Int -> Int -> Int -> YesodExample App (Entity Sale)
+createItem uid saleId name minimumPrice startPrice currentPrice = do
+    currentTime <- getCurrentTime
+    return $ insertEntity $ Sale
+        { itemSale = saleId
+        , itemLabel = name
+        , itemMinimumPrice = minimumPrice
+        , itemStartPrice = startPrice
+        , itemCurrentPrice = currentPrice
+        , itemCreated = currentTime
+        , itemUser = uid
+        }
+
+-- | Create a Bid
+createBid :: Key User -> YesodExample App (Entity Bid)
+createBid uid itemId price = do
+    currentTime <- getCurrentTime
+    return $ insertEntity $ Bid
+        { bidType = Types.BidTypeLive
+        , bidItem = itemId
+        , bidPrice = price
+        , bidCreated = currentTime
+        , bidChanged = Nothing
+        , bidBidder = uid
+        , bidUser = Nothing
+        }
