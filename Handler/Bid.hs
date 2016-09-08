@@ -54,51 +54,45 @@ postEditBidR bidId = do
     case result of
         FormSuccess bid -> do
             updateRes <- updateBid bidId bid
-            case updateRes of
-                Right _ -> do
-                    sendMessage BidEdit (Entity bidId bid)
-                    setMessage "Bid updated"
-                    redirect $ BidR bidId
-                Left errorMessages -> do
-                    setMessage "Save failed"
-                    defaultLayout $(widgetFile "bid-update")
+            sendMessage BidEdit (Entity bidId bid)
+            setMessage "Bid updated"
+            redirect $ BidR bidId
 
         _ -> do
             setMessage "Saving failed."
             defaultLayout $(widgetFile "bid-update")
 
-updateBid :: Key Bid -> Bid -> Handler (Either [Text] ())
+updateBid :: Key Bid -> Bid -> Handler Bool
 updateBid bidId bid = do
     let validations =
-            [ validateBidPrice bid
-            , validateBidPrice' bid
+            [ validateBidPrice $ bidPrice bid
+            , validateBidPrice' $ bidPrice bid
             ]
-    validations' <- sequenceA validations
-    let lefts' = lefts validations'
+    let lefts' = lefts validations
     if (not $ null lefts')
-        then return $ Left lefts'
+        then return False
         else do
             _ <- runDB $ replace bidId bid
-            return $ Right ()
+            return True
 
 
-validateBidPrice :: Bid -> Handler (Either Text Bool)
-validateBidPrice bid =
-    if (bidPrice bid <= 0)
-        then return $ Left "Price should be above 0"
-        else return $ Right True
+validateBidPrice :: Int -> Either Text Int
+validateBidPrice price =
+    if (price <= 0)
+        then Left "Price should be above 0"
+        else Right price
 
-validateBidPrice' :: Bid -> Handler (Either Text Bool)
-validateBidPrice' bid =
-    if (bidPrice bid <= 10)
-        then return $ Left "Price should be above 10"
-        else return $ Right True
+validateBidPrice' :: Int -> Either Text Int
+validateBidPrice' price =
+    if (price <= 10)
+        then Left "Price should be above 10"
+        else Right price
 
 bidForm :: UserId -> Maybe Bid -> Form Bid
 bidForm userId mbid = renderSematnicUiDivs $ Bid
     <$> areq (selectField optionsEnum) (selectSettings "Type") (bidType <$> mbid)
     <*> areq (selectField items) (selectSettings "Item") (bidItem <$> mbid)
-    <*> areq intField "Price" (bidPrice <$> mbid)
+    <*> areq priceField "Price" (bidPrice <$> mbid)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
     <*> areq (selectField bidders) (selectSettings "Bidder") (bidBidder <$> mbid)
@@ -119,7 +113,7 @@ bidForm userId mbid = renderSematnicUiDivs $ Bid
         bidders = do
             entities <- runDB $ selectList [] [Asc UserIdent]
             optionsPairs $ map (\item -> (userIdent $ entityVal item, entityKey item)) entities
-
+        priceField = check validateBidPrice intField
 
 
 -- @todo: Move to Utils.
