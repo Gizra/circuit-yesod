@@ -71,7 +71,7 @@ bidForm :: UserId -> Maybe Bid -> Form Bid
 bidForm userId mbid = renderSematnicUiDivs $ Bid
     <$> areq (selectField optionsEnum) (selectSettings "Type") (bidType <$> mbid)
     <*> areq (selectField items) (selectSettings "Item") (bidItem <$> mbid)
-    <*> areq intField "Price" (bidPrice <$> mbid)
+    <*> areq priceField "Price" (bidPrice <$> mbid)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
     <*> areq (selectField bidders) (selectSettings "Bidder") (bidBidder <$> mbid)
@@ -92,6 +92,12 @@ bidForm userId mbid = renderSematnicUiDivs $ Bid
         bidders = do
             entities <- runDB $ selectList [] [Asc UserIdent]
             optionsPairs $ map (\item -> (userIdent $ entityVal item, entityKey item)) entities
+
+        priceField = checkBool (> 0) errorMessage intField
+          where
+            errorMessage :: Text
+            errorMessage = "Price must be a positive integer."
+
 
 
 -- @todo: Move to Utils.
