@@ -8,7 +8,7 @@
 
     <div class="ui segment">
         <div>
-            <strong>Price:</strong> #{bidPrice bid}
+            <strong>Price:</strong> <span class="price">#{bidPrice bid}</span>
 
         <div>
-            <strong>Item:</strong> #{show $ fromSqlKey $ bidItem bid}
+            <strong>Item:</strong> <span class="bid-id">#{show $ fromSqlKey $ bidItem bid}</span>

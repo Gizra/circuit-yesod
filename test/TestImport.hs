@@ -76,12 +76,12 @@ createUser ident = do
         }
 
 -- | Create a Sale.
-createSale :: Key User -> Text -> SaleStatus -> YesodExample App (Entity Sale)
-createSale uid name status = do
+createSale :: Key User -> Text -> YesodExample App (Entity Sale)
+createSale uid name = do
     currentTime <- liftIO getCurrentTime
     runDB $ insertEntity Sale
         { saleName = name
-        , saleStatus = status
+        , saleStatus = SaleStatusActive
         , saleType = SaleTypeLive
         , saleCurrentItem = Nothing
         , saleCreated = currentTime
