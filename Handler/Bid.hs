@@ -45,7 +45,6 @@ getEditBidR bidId = do
     (userId, _) <- requireAuthPair
 
     (widget, enctype) <- generateFormPost $ bidForm userId (Just bid)
-    let messages = Nothing
     defaultLayout $(widgetFile "bid-update")
 
 postEditBidR :: BidId -> Handler Html
@@ -61,21 +60,39 @@ postEditBidR bidId = do
                     setMessage "Bid updated"
                     redirect $ BidR bidId
                 Left errorMessages -> do
-                    let messages = Just errorMessages
+                    setMessage "Save failed"
                     defaultLayout $(widgetFile "bid-update")
 
         _ -> do
-            let messages = Nothing
             setMessage "Saving failed."
             defaultLayout $(widgetFile "bid-update")
 
 updateBid :: Key Bid -> Bid -> Handler (Either [Text] ())
 updateBid bidId bid = do
-    if (bidPrice bid <= 0)
-        then return $ Left ["Price above 0", "foo"]
+    let validations =
+            [ validateBidPrice bid
+            , validateBidPrice' bid
+            ]
+    validations' <- sequenceA validations
+    let lefts' = lefts validations'
+    if (not $ null lefts')
+        then return $ Left lefts'
         else do
             _ <- runDB $ replace bidId bid
             return $ Right ()
+
+
+validateBidPrice :: Bid -> Handler (Either Text Bool)
+validateBidPrice bid =
+    if (bidPrice bid <= 0)
+        then return $ Left "Price should be above 0"
+        else return $ Right True
+
+validateBidPrice' :: Bid -> Handler (Either Text Bool)
+validateBidPrice' bid =
+    if (bidPrice bid <= 10)
+        then return $ Left "Price should be above 10"
+        else return $ Right True
 
 bidForm :: UserId -> Maybe Bid -> Form Bid
 bidForm userId mbid = renderSematnicUiDivs $ Bid
