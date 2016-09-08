@@ -45,6 +45,7 @@ getEditBidR bidId = do
     (userId, _) <- requireAuthPair
 
     (widget, enctype) <- generateFormPost $ bidForm userId (Just bid)
+    let messages = Nothing
     defaultLayout $(widgetFile "bid-update")
 
 postEditBidR :: BidId -> Handler Html
@@ -60,9 +61,11 @@ postEditBidR bidId = do
                     setMessage "Bid updated"
                     redirect $ BidR bidId
                 Left errorMessages -> do
+                    let messages = Just errorMessages
                     defaultLayout $(widgetFile "bid-update")
 
         _ -> do
+            let messages = Nothing
             setMessage "Saving failed."
             defaultLayout $(widgetFile "bid-update")
 

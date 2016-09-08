@@ -5,6 +5,14 @@
         <a class="item active" href="@{EditBidR bidId}">
             Edit
 
+  $maybe msg <- messages
+    error
+
+  $nothing
+    OK!
+
+
+
   <form class="ui form" method=post action=@{EditBidR bidId} enctype=#{enctype}>
     ^{widget}
     <button.ui.primary.button>Update Bid
