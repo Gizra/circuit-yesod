@@ -29,17 +29,15 @@ instance ToJSON (Entity Bid) where
 instance FromJSON BidType where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 6 }
 
-instance FromJSON Bid where
-    parseJSON (Object o) = Bid
-        <$> o .: "type"
-        <*> o .: "item"
-        <*> o .: "price"
-        <*> o .: "created"
-        <*> o .: "changed"
-        <*> o .: "bidder"
-        <*> o .: "user"
+instance ToJSON BidType where
+  toJSON = genericToJSON defaultOptions { fieldLabelModifier = drop 6 }
 
-    parseJSON _ = mzero
+instance FromJSON Bid where
+    parseJSON = genericParseJSON defaultOptions
+    -- parseJSON _ = mzero
+
+instance ToJSON Bid where
+  toJSON = genericToJSON defaultOptions
 
 -- @todo: Can this be in Model.Types ?
 data SseEventName = BidCreate | BidEdit
