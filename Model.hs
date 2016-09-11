@@ -1,10 +1,14 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module Model where
 
+import Data.Aeson
+import Data.Aeson.Types
 import ClassyPrelude.Yesod
 import Database.Persist.Sql (fromSqlKey)
 import Database.Persist.Quasi
+import GHC.Generics
 import Model.Types
 
 -- You can define all of your database entities in the entities file.
@@ -22,9 +26,8 @@ instance ToJSON (Entity Bid) where
         , "bidder"    .= bidBidder bid
         ]
 
--- instance FromJSON BidType where
---     parseJSON (Object o) = BidType
---         <$> o .: "type"
+instance FromJSON BidType where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 6 }
 
 instance FromJSON Bid where
     parseJSON (Object o) = Bid
