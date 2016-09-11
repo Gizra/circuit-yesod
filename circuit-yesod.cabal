@@ -95,6 +95,7 @@ library
                  , case-insensitive
                  , wai
 
+                 , foreign-store
                  , resource-pool
 
 executable         circuit-yesod

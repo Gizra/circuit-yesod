@@ -9,6 +9,7 @@ import Database.Persist      as X hiding (get)
 import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation            as X
 import Model                 as X
+import Model.Types           as X
 import Test.Hspec            as X
 import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (useEnv, loadYamlSettings)
@@ -72,4 +73,45 @@ createUser ident = do
     runDB $ insertEntity User
         { userIdent = ident
         , userPassword = Nothing
+        }
+
+-- | Create a Sale.
+createSale :: Key User -> Text -> YesodExample App (Entity Sale)
+createSale uid name = do
+    currentTime <- liftIO getCurrentTime
+    runDB $ insertEntity Sale
+        { saleName = name
+        , saleStatus = SaleStatusActive
+        , saleType = SaleTypeLive
+        , saleCurrentItem = Nothing
+        , saleCreated = currentTime
+        , saleUser = uid
+        }
+
+-- | Create an Item.
+createItem :: Key User -> Key Sale -> Text -> Int -> Int -> Int -> YesodExample App (Entity Item)
+createItem uid saleId name minimumPrice startPrice currentPrice = do
+    currentTime <- liftIO getCurrentTime
+    runDB $ insertEntity Item
+        { itemSale = saleId
+        , itemLabel = name
+        , itemMinimumPrice = minimumPrice
+        , itemStartPrice = startPrice
+        , itemCurrentPrice = currentPrice
+        , itemCreated = currentTime
+        , itemUser = uid
+        }
+
+-- | Create a Bid
+createBid :: Key User -> Key Item -> Int -> YesodExample App (Entity Bid)
+createBid uid itemId price = do
+    currentTime <- liftIO getCurrentTime
+    runDB $ insertEntity Bid
+        { bidType = BidTypeLive
+        , bidItem = itemId
+        , bidPrice = price
+        , bidCreated = currentTime
+        , bidChanged = Nothing
+        , bidBidder = uid
+        , bidUser = Nothing
         }
