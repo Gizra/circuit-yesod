@@ -12,7 +12,7 @@
 
 
         <div class="column">
-            <div class="ui segment">
+            <div class="ui segment bids-wrapper">
                 <h2>
                     Bids
                 <ul>
