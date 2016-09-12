@@ -10,7 +10,7 @@ Sale
     currentItem     ItemId Maybe -- When creating the sale, item still doesn't exists.
     created         UTCTime
     user            UserId
-    deriving        Show
+    deriving        Show Generic
 Item
     sale            SaleId
     label           Text
@@ -19,7 +19,7 @@ Item
     currentPrice    Int
     created         UTCTime
     user            UserId
-    deriving        Show
+    deriving        Show Generic
 Bid
     type            BidType
     item            ItemId

@@ -22,6 +22,9 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"]
 instance ToJSON (Entity Bid) where
     toJSON (Entity bidId bid) = object
         [ "id"      .= (fromSqlKey bidId)
+        , "type"    .= bidType bid
+        , "item"    .= bidItem bid
+        , "price"    .= bidPrice bid
         , "created" .= bidCreated bid
         , "bidder"    .= bidBidder bid
         ]
