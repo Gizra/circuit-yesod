@@ -12,3 +12,6 @@
 
         <div>
             <strong>Item:</strong> <span class="bid-id">#{show $ fromSqlKey $ bidItem bid}</span>
+
+        <div>
+            <a href="@{RestfulBidR bidId}">RESTful view

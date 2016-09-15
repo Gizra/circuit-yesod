@@ -10,7 +10,7 @@ Sale
     currentItem     ItemId Maybe -- When creating the sale, item still doesn't exists.
     created         UTCTime
     user            UserId
-    deriving        Show
+    deriving        Show Generic
 Item
     sale            SaleId
     label           Text
@@ -19,7 +19,7 @@ Item
     currentPrice    Int
     created         UTCTime
     user            UserId
-    deriving        Show
+    deriving        Show Generic
 Bid
     type            BidType
     item            ItemId
@@ -28,7 +28,6 @@ Bid
     changed         UTCTime Maybe
     bidder          UserId
     user            UserId Maybe
-    deriving        Eq
-    deriving        Show
+    deriving        Eq Show Generic
 
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)

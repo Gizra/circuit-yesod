@@ -1,10 +1,14 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module Model where
 
+import Data.Aeson
+import Data.Aeson.Types
 import ClassyPrelude.Yesod
 import Database.Persist.Sql (fromSqlKey)
 import Database.Persist.Quasi
+import GHC.Generics
 import Model.Types
 
 -- You can define all of your database entities in the entities file.
@@ -18,11 +22,25 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"]
 instance ToJSON (Entity Bid) where
     toJSON (Entity bidId bid) = object
         [ "id"      .= (fromSqlKey bidId)
+        , "type"    .= bidType bid
+        , "item"    .= bidItem bid
+        , "price"    .= bidPrice bid
         , "created" .= bidCreated bid
         , "bidder"    .= bidBidder bid
         ]
 
+instance FromJSON BidType where
+    parseJSON = genericParseJSON defaultOptions
 
+instance ToJSON BidType where
+  toJSON = genericToJSON defaultOptions
+
+instance FromJSON Bid where
+    parseJSON = genericParseJSON defaultOptions
+    -- parseJSON _ = mzero
+
+instance ToJSON Bid where
+  toJSON = genericToJSON defaultOptions
 
 -- @todo: Can this be in Model.Types ?
 data SseEventName = BidCreate | BidEdit
