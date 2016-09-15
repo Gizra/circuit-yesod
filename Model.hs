@@ -30,10 +30,10 @@ instance ToJSON (Entity Bid) where
         ]
 
 instance FromJSON BidType where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 6 }
+    parseJSON = genericParseJSON defaultOptions
 
 instance ToJSON BidType where
-  toJSON = genericToJSON defaultOptions { fieldLabelModifier = drop 6 }
+  toJSON = genericToJSON defaultOptions
 
 instance FromJSON Bid where
     parseJSON = genericParseJSON defaultOptions
