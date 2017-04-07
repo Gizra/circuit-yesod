@@ -25,26 +25,24 @@ getRestfulBidR bidId = do
     params <- reqGetParams <$> getRequest
     let bidWithMetaData = addMetaData urlRenderParams params bidId bid
 
-
     muid <- maybeAuthId
-    liftIO $ print muid
 
-
-    let bidWithMetaDataAndSanitizedUser =
-          case muid of
-              Nothing -> bidWithMetaData
-              Just uid ->
-                case bidWithMetaData of
-                  Nothing -> bidWithMetaData
-                  Just bidWithMetaData' ->
-                      if (bidBidder bid == uid)
-                        then Just bidWithMetaData'
-                        else Just $ HM.insert "bidder" Null bidWithMetaData'
-
-
+    let bidWithMetaDataAndSanitizedUser = sanitiziePrivateProperties muid bid bidWithMetaData
 
     return $ object ["data" .= bidWithMetaDataAndSanitizedUser]
 
+
+sanitiziePrivateProperties :: Maybe (Key User) -> Bid -> Maybe (HashMap Text Value) -> Maybe (HashMap Text Value)
+sanitiziePrivateProperties muid bid mBidHash =
+  case muid of
+      Nothing -> mBidHash
+      Just uid ->
+        case mBidHash of
+          Nothing -> mBidHash
+          Just bidHash ->
+              if (bidBidder bid == uid)
+                then Just bidHash
+                else Just $ HM.insert "bidder" Null bidHash
 
 putRestfulBidR :: BidId -> Handler Value
 putRestfulBidR bidId = do
