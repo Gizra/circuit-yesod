@@ -53,25 +53,39 @@ postEditBidR bidId = do
     ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
-            _ <- runDB $ replace bidId bid
-
+            updateRes <- updateBid bidId bid
             sendMessage BidEdit (Entity bidId bid)
             setMessage "Bid updated"
             redirect $ BidR bidId
-        _ -> defaultLayout
-            [whamlet|
-                <p>Invalid input, let's try again.
-                <form method=post action=@{EditBidR bidId} enctype=#{enctype}>
-                    ^{widget}
-                    <button>Submit
-            |]
 
+        _ -> do
+            setMessage "Saving failed."
+            defaultLayout $(widgetFile "bid-update")
+
+updateBid :: Key Bid -> Bid -> Handler Bool
+updateBid bidId bid = do
+    let validations =
+            [ validateBidPrice $ bidPrice bid
+            ]
+    let lefts' = lefts validations
+    if (not $ null lefts')
+        then return False
+        else do
+            _ <- runDB $ replace bidId bid
+            return True
+
+
+validateBidPrice :: Int -> Either Text Int
+validateBidPrice price =
+    if (price <= 0)
+        then Left "Price should be above 0"
+        else Right price
 
 bidForm :: UserId -> Maybe Bid -> Form Bid
 bidForm userId mbid = renderSematnicUiDivs $ Bid
     <$> areq (selectField optionsEnum) (selectSettings "Type") (bidType <$> mbid)
     <*> areq (selectField items) (selectSettings "Item") (bidItem <$> mbid)
-    <*> areq intField "Price" (bidPrice <$> mbid)
+    <*> areq priceField "Price" (bidPrice <$> mbid)
     <*> lift (liftIO getCurrentTime)
     <*> pure Nothing
     <*> areq (selectField bidders) (selectSettings "Bidder") (bidBidder <$> mbid)
@@ -92,6 +106,7 @@ bidForm userId mbid = renderSematnicUiDivs $ Bid
         bidders = do
             entities <- runDB $ selectList [] [Asc UserIdent]
             optionsPairs $ map (\item -> (userIdent $ entityVal item, entityKey item)) entities
+        priceField = check validateBidPrice intField
 
 
 -- @todo: Move to Utils.
