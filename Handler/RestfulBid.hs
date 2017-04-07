@@ -34,15 +34,14 @@ getRestfulBidR bidId = do
 
 sanitiziePrivateProperties :: Maybe (Key User) -> Bid -> Maybe (HashMap Text Value) -> Maybe (HashMap Text Value)
 sanitiziePrivateProperties muid bid mBidHash =
-  case muid of
-      Nothing -> mBidHash
-      Just uid ->
-        case mBidHash of
-          Nothing -> mBidHash
-          Just bidHash ->
-              if (bidBidder bid == uid)
-                then Just bidHash
-                else Just $ HM.insert "bidder" Null bidHash
+  maybe Nothing (\uid ->
+    maybe Nothing (\bidHash ->
+      if (bidBidder bid == uid)
+        then Just bidHash
+        else Just $ HM.insert "bidder" Null bidHash
+    ) mBidHash
+  ) muid
+
 
 putRestfulBidR :: BidId -> Handler Value
 putRestfulBidR bidId = do
