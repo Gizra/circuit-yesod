@@ -35,16 +35,23 @@ instance FromJSON BidType where
 instance ToJSON BidType where
   toJSON = genericToJSON defaultOptions
 
-instance FromJSON Bid where
+
+-- A Bid type that represents the data we will get from
+data SemiBid = SemiBid
+  { semiBidType :: BidType
+  , semiBidItem :: ItemId
+  , semiBidPrice :: Int
+  }
+
+instance FromJSON SemiBid where
   parseJSON (Object v) =
-     Bid    <$> v .: "type"
-            <*> v .: "item"
-            <*> v .: "price"
-            <*> getCurrentTime -- "created" property.
-            <*> Nothing -- "changed" property.
-            <*> maybeAuthId
-            <*> Nothing -- "user" property.
+     SemiBid <$> v .: "type"
+             <*> v .: "item"
+             <*> v .: "price"
   parseJSON _ = mzero
+
+instance FromJSON Bid where
+  parseJSON = genericParseJSON defaultOptions
 
 instance ToJSON Bid where
   toJSON = genericToJSON defaultOptions

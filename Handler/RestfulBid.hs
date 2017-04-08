@@ -59,7 +59,20 @@ deleteRestfulBidR bidId = do
 
 postRestfulBidsR :: Handler Value
 postRestfulBidsR = do
-    bid     <- requireJsonBody :: Handler Bid
+    currentTime <- liftIO getCurrentTime
+    userId <- requireAuthId
+
+    semiBid <- requireJsonBody :: Handler SemiBid
+    let bid = Bid
+          { bidType = semiBidType semiBid
+          , bidItem = semiBidItem semiBid
+          , bidPrice = semiBidPrice semiBid
+          , bidCreated = currentTime
+          , bidChanged = Nothing
+          , bidBidder = userId
+          , bidUser  = Nothing
+          }
+
     bidId   <- runDB $ insert bid
     returnVal <- getRestfulBidR bidId
 
