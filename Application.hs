@@ -111,9 +111,9 @@ migrateData pool = do
 
             -- Sale
             sale1 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
-            sale2 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
-            sale3 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusPaused Types.SaleTypeLive Nothing currentTime userId2) pool
-            sale4 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusClosed Types.SaleTypeLive Nothing currentTime userId3) pool
+            sale2 <- runSqlPool (insert $ Sale "sale2" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
+            sale3 <- runSqlPool (insert $ Sale "sale3" Types.SaleStatusPaused Types.SaleTypeLive Nothing currentTime userId2) pool
+            sale4 <- runSqlPool (insert $ Sale "sale4" Types.SaleStatusClosed Types.SaleTypeLive Nothing currentTime userId3) pool
 
             -- Item
             item1 <- runSqlPool (insert $ Item sale1 "Item1 - Sale1" 10 10 100 currentTime userId1) pool

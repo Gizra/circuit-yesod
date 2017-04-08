@@ -56,3 +56,11 @@ deleteRestfulBidR bidId = do
     runDB $ delete bidId
 
     sendResponseStatus status204 ()
+
+postRestfulBidsR :: Handler Value
+postRestfulBidsR = do
+    bid     <- requireJsonBody :: Handler Bid
+    bidId   <- runDB $ insert bid
+    returnVal <- getRestfulBidR bidId
+
+    sendResponseStatus status201 returnVal

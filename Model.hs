@@ -36,8 +36,15 @@ instance ToJSON BidType where
   toJSON = genericToJSON defaultOptions
 
 instance FromJSON Bid where
-    parseJSON = genericParseJSON defaultOptions
-    -- parseJSON _ = mzero
+  parseJSON (Object v) =
+     Bid    <$> v .: "type"
+            <*> v .: "item"
+            <*> v .: "price"
+            <*> getCurrentTime -- "created" property.
+            <*> Nothing -- "changed" property.
+            <*> maybeAuthId
+            <*> Nothing -- "user" property.
+  parseJSON _ = mzero
 
 instance ToJSON Bid where
   toJSON = genericToJSON defaultOptions
