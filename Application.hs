@@ -105,6 +105,10 @@ migrateData pool = do
             userId2 <- runSqlPool (insert $ createUser "demo")  pool
             userId3 <- runSqlPool (insert $ createUser "luli")  pool
 
+            -- AccessToken
+            _ <- runSqlPool (insert $ AccessToken currentTime userId1 "1234") pool
+            _ <- runSqlPool (insert $ AccessToken currentTime userId2 "5678") pool
+
             -- Sale
             sale1 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
             sale2 <- runSqlPool (insert $ Sale "sale1" Types.SaleStatusActive Types.SaleTypeLive Nothing currentTime userId1) pool
