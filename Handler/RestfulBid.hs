@@ -1,8 +1,9 @@
 module Handler.RestfulBid where
 
-import qualified Data.HashMap.Strict as HM (insert)
+import qualified Data.HashMap.Strict   as HM (insert)
 import           Import
-import           Model.Types         (BidType (BidTypeLive))
+import           Model.Types           (BidType (BidTypeLive))
+import           Utils.ServerSentEvent
 
 
 
@@ -75,6 +76,8 @@ postRestfulBidsR = do
           }
 
     bidId   <- runDB $ insert bid
+    sendMessage BidCreate (Entity bidId bid)
+
     returnVal <- getRestfulBidR bidId
 
     sendResponseStatus status201 returnVal
