@@ -1,7 +1,9 @@
 module Handler.RestfulBidSpec (spec) where
 
+import           Data.Aeson
 import           Database.Persist.Sql (fromSqlKey)
 import           TestImport
+
 
 
 spec :: Spec
@@ -51,3 +53,28 @@ spec = withApp $ do
             authenticateAs otherUserEntity
             get $ RestfulBidR bidId
             bodyContains "\"bidder\":null"
+
+        it "should allow user to create a bid" $ do
+            userEntity <- createUser "john"
+            let (Entity uid _) = userEntity
+
+            (Entity saleId _)  <-  createSale uid "sale1"
+            (Entity itemId _)  <- createItem uid saleId "item1" 0 10 100
+            (Entity bidId _) <- createBid uid itemId 150
+
+            let body = object [ "price" .= (42 :: Int)
+                              , "item"  .= fromSqlKey itemId
+                              ]
+
+            authenticateAs userEntity
+            request $ do
+              setMethod "POST"
+              setUrl $ RestfulBidsR
+              addRequestHeader ("Content-Type", "application/json")
+              setRequestBody $ encode body
+
+            printBody
+            statusIs 201
+
+            -- Assert current user is the bidder
+            bodyContains $ "\"bidder\":" ++ (show $ fromSqlKey uid)

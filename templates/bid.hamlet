@@ -11,7 +11,7 @@
             <strong>Price:</strong> <span class="price">#{bidPrice bid}</span>
 
         <div>
-            <strong>Item:</strong> <span class="bid-id">#{show $ fromSqlKey $ bidItem bid}</span>
+            <strong>Item:</strong> <span class="item-id">#{show $ fromSqlKey $ bidItem bid}</span>
 
         <div>
             <a href="@{RestfulBidR bidId}">RESTful view

@@ -1,7 +1,7 @@
 module Handler.BidSpec (spec) where
 
-import TestImport
-import Database.Persist.Sql (fromSqlKey)
+import           Database.Persist.Sql (fromSqlKey)
+import           TestImport
 
 spec :: Spec
 spec = withApp $ do
@@ -20,4 +20,4 @@ spec = withApp $ do
             get $ BidR bidId
 
             htmlAnyContain "span.price" "150"
-            htmlAnyContain "span.bid-id" (show $ fromSqlKey bidId)
+            htmlAnyContain "span.item-id" (show $ fromSqlKey itemId)
