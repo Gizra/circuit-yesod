@@ -53,7 +53,7 @@ postEditBidR bidId = do
     ((result, widget), enctype) <- runFormPost $ bidForm userId Nothing
     case result of
         FormSuccess bid -> do
-            updateRes <- updateBid bidId bid
+            _ <- updateBid bidId bid
             sendMessage BidEdit (Entity bidId bid)
             setMessage "Bid updated"
             redirect $ BidR bidId
