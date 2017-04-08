@@ -36,7 +36,7 @@ instance ToJSON BidType where
   toJSON = genericToJSON defaultOptions
 
 
--- A Bid type that represents the data we will get from
+-- A Bid type that represents the data we will get from JSON.
 data SemiBid = SemiBid
   { semiBidItem :: ItemId
   , semiBidPrice :: Int
