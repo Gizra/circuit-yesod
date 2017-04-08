@@ -2,6 +2,7 @@ module Handler.RestfulBid where
 
 import qualified Data.HashMap.Strict as HM (insert)
 import           Import
+import           Model.Types         (BidType (BidTypeLive))
 
 
 
@@ -64,7 +65,7 @@ postRestfulBidsR = do
 
     semiBid <- requireJsonBody :: Handler SemiBid
     let bid = Bid
-          { bidType = semiBidType semiBid
+          { bidType = BidTypeLive
           , bidItem = semiBidItem semiBid
           , bidPrice = semiBidPrice semiBid
           , bidCreated = currentTime

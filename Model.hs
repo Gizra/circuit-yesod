@@ -38,15 +38,13 @@ instance ToJSON BidType where
 
 -- A Bid type that represents the data we will get from
 data SemiBid = SemiBid
-  { semiBidType :: BidType
-  , semiBidItem :: ItemId
+  { semiBidItem :: ItemId
   , semiBidPrice :: Int
   }
 
 instance FromJSON SemiBid where
   parseJSON (Object v) =
-     SemiBid <$> v .: "type"
-             <*> v .: "item"
+     SemiBid <$> v .: "item"
              <*> v .: "price"
   parseJSON _ = mzero
 
