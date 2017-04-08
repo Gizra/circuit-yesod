@@ -30,4 +30,14 @@ Bid
     user            UserId Maybe
     deriving        Eq Show Generic
 
+AccessToken
+    created UTCTime
+    userId UserId
+    token Text
+    UniqueUserId userId
+    UniqueToken token
+    deriving Eq
+    deriving Show
+
+
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)
