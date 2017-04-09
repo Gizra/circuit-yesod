@@ -119,7 +119,7 @@ test-suite test
                        Handler.HomeSpec
                        Handler.ProfileSpec
                        Handler.RestfulBidSpec
-                       Handler.RegenerateAccessToken
+                       Handler.RegenerateAccessTokenSpec
                        TestImport
     hs-source-dirs:    test
     ghc-options:       -Wall
