@@ -2,9 +2,11 @@ module Foundation where
 
 import Import.NoFoundation
 import qualified Data.CaseInsensitive as CI
+import qualified Data.List as DL (head)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import qualified Data.Text.Encoding as TE
 import Network.Wai.EventSource
+import Test.RandomStrings
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
@@ -227,10 +229,18 @@ instance YesodAuth App where
         x <- getBy $ UniqueUser $ credsIdent creds
         case x of
             Just (Entity uid _) -> return $ Authenticated uid
-            Nothing -> Authenticated <$> insert User
+            Nothing -> do
+              uid <- insert User
                 { userIdent = credsIdent creds
                 , userPassword = Nothing
                 }
+              let isoAlpha = onlyAlphaNum randomASCII
+              accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
+              let accessTokenText = pack $ DL.head accessTokenStrings
+
+              currentTime <- liftIO getCurrentTime
+              _ <- insert $ AccessToken currentTime uid accessTokenText
+              return $ Authenticated uid
 
     authPlugins app = [] ++ extraAuthPlugins
         -- Enable authDummy login when in development mode.

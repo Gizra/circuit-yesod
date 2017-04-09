@@ -96,6 +96,7 @@ library
                  , wai
 
                  , foreign-store
+                 , random-strings
                  , resource-pool
 
 executable         circuit-yesod
