@@ -21,7 +21,7 @@ spec = withApp $ do
           -- Validate access token for the new user exists.
           mUser <- runDB $ selectFirst [UserIdent ==. userName] []
           tokenCreated <- maybe (return False) (\user -> do
-                        mToken <- runDB $ selectFirst [AccessTokenToken ==. entityKey user] []
+                        mToken <- runDB $ selectFirst [AccessTokenUserId ==. entityKey user] []
                         return $ isJust mToken
                       ) mUser
 
