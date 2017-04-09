@@ -37,10 +37,10 @@ getRestfulBidR bidId = do
 sanitiziePrivateProperties :: Maybe (Key User) -> Bid -> Maybe (HashMap Text Value) -> Maybe (HashMap Text Value)
 sanitiziePrivateProperties muid bid mBidHash =
   maybe Nothing (\uid ->
-    maybe Nothing (\bidHash ->
+    fmap (\bidHash ->
       if (bidBidder bid == uid)
-        then Just bidHash
-        else Just $ HM.insert "bidder" Null bidHash
+        then bidHash
+        else HM.insert "bidder" Null bidHash
     ) mBidHash
   ) muid
 
