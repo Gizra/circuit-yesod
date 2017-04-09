@@ -166,6 +166,7 @@ instance Yesod App where
     isAuthorized (EditBidR _) _ = isAuthenticated
     isAuthorized HomeR _ = isAuthenticated
     isAuthorized ProfileR _ = isAuthenticated
+    isAuthorized (RegenerateAccessToken _) _ = isAuthenticated
     isAuthorized (RestfulBidR _) _ = isAuthenticated
     isAuthorized RestfulBidsR _ = isAuthenticated
 

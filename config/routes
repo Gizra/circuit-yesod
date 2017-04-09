@@ -17,3 +17,4 @@
 
 /api/bids RestfulBidsR POST
 /api/bids/#BidId RestfulBidR GET PUT DELETE
+/regenerate-access-token/#UserId RegenerateAccessTokenR GET POST

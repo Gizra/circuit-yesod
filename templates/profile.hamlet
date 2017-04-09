@@ -4,3 +4,6 @@
     <div>
       Access token:
         <input value=#{accessTokenText}>
+
+    <div>
+      <a href="@{RegenerateAccessTokenR uid}">Regenerate access token
