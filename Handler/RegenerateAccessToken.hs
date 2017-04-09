@@ -20,8 +20,13 @@ getRegenerateAccessTokenR userId = do
   defaultLayout $ do
       setTitle "Regenerate Access Token"
       toWidget [whamlet|
-        <form method="post" action="@{RegenerateAccessTokenR userId}" enctype=#{enctype}>
+        <form class="ui form" method="post" action="@{RegenerateAccessTokenR userId}" enctype=#{enctype}>
             ^{widget}
+            <h2>
+              Regenerate access token?
+            <div>
+              This oepration cannot be undone.
+
             <input type="submit" value="Submit">
       |]
 
