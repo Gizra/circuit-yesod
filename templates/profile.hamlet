@@ -1,2 +1,6 @@
 <div class="ui container">
     Hi <strong><span class="username">#{userIdent user}</span></strong>!
+
+    <div>
+      Access token:
+        <input value=#{accessTokenText}>
