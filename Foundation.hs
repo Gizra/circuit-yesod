@@ -239,7 +239,7 @@ instance YesodAuth App where
               -- Create random access token for the new user.
               let isoAlpha = onlyAlphaNum randomASCII
               accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
-              let accessTokenText = pack $ DL.head accessTokenStrings
+              let accessTokenText = pack $ DL.head accessTokenStrings :: Text
 
               currentTime <- liftIO getCurrentTime
               _ <- insert $ AccessToken currentTime uid accessTokenText
