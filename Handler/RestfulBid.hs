@@ -38,7 +38,7 @@ sanitiziePrivateProperties :: Maybe (Key User) -> Bid -> Maybe (HashMap Text Val
 sanitiziePrivateProperties muid bid mBidHash =
   maybe Nothing (\uid ->
     fmap (\bidHash ->
-      if (bidBidder bid == uid)
+      if bidBidder bid == uid
         then bidHash
         else HM.insert "bidder" Null bidHash
     ) mBidHash
