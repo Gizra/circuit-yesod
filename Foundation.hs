@@ -2,9 +2,11 @@ module Foundation where
 
 import Import.NoFoundation
 import qualified Data.CaseInsensitive as CI
+import qualified Data.List as DL (head)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import qualified Data.Text.Encoding as TE
 import Network.Wai.EventSource
+import Test.RandomStrings
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
@@ -227,10 +229,20 @@ instance YesodAuth App where
         x <- getBy $ UniqueUser $ credsIdent creds
         case x of
             Just (Entity uid _) -> return $ Authenticated uid
-            Nothing -> Authenticated <$> insert User
+            Nothing -> do
+              uid <- insert User
                 { userIdent = credsIdent creds
                 , userPassword = Nothing
                 }
+
+              -- Create random access token for the new user.
+              let isoAlpha = onlyAlphaNum randomASCII
+              accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
+              let accessTokenText = pack $ DL.head accessTokenStrings
+
+              currentTime <- liftIO getCurrentTime
+              _ <- insert $ AccessToken currentTime uid accessTokenText
+              return $ Authenticated uid
 
     authPlugins app = [] ++ extraAuthPlugins
         -- Enable authDummy login when in development mode.
@@ -242,10 +254,8 @@ instance YesodAuth App where
           tokenAuth <- case mToken of
               Nothing -> return Nothing
               Just token -> do
-                  mUser <- runDB $ selectFirst [AccessTokenToken ==. token] []
-                  case mUser of
-                      Nothing -> return Nothing
-                      Just user -> return $ Just . accessTokenUserId $ entityVal user
+                  mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
+                  return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
           defaultAuth <- defaultMaybeAuthId
           return $ case catMaybes [defaultAuth, tokenAuth] of
               [] -> Nothing
