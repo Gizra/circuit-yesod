@@ -24,6 +24,16 @@
     \q
     ```
 
+### Troubleshooting
+
+#### Mac
+
+```
+Configuring postgresql-libpq-0.9.2.0...
+setup: The program 'pg_config' is required but it could not be found.
+```
+
+Fix by: `brew install postgresql`
 
 ## Run
 
