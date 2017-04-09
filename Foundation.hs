@@ -234,6 +234,8 @@ instance YesodAuth App where
                 { userIdent = credsIdent creds
                 , userPassword = Nothing
                 }
+
+              -- Create random access token for the new user.
               let isoAlpha = onlyAlphaNum randomASCII
               accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
               let accessTokenText = pack $ DL.head accessTokenStrings
