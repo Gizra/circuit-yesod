@@ -34,5 +34,5 @@ spec = withApp $ do
                       -- Confirm access token has changed.
                       mTokenAfterChange <- runDB $ selectFirst [AccessTokenUserId ==. entityKey user] []
 
-                      -- assertEq "Access token has changed" mToken mTokenAfterChange
+                      assertEq "Access token has changed" (mToken /= mTokenAfterChange) True
                   ) mUser
