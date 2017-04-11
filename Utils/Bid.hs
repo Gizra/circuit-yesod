@@ -2,6 +2,7 @@ module Utils.Bid
   ( isWinningBid
   ) where
 
+import qualified Data.List          as DL (head)
 import           Database.Esqueleto ((^.))
 import qualified Database.Esqueleto as E
 import           Import
@@ -9,7 +10,7 @@ import           Import
 isWinningBid :: BidId -> Bid -> Handler Bool
 isWinningBid bidEntityId bidEntity = do
     -- Get the height bid of an item.
-    highestBid <- runDB
+    highestBidsResult <- runDB
                . E.select
                . E.from $ \bid -> do
                     E.where_ $ bid ^. BidItem E.==. (E.val $ bidItem bidEntity)
@@ -18,5 +19,6 @@ isWinningBid bidEntityId bidEntity = do
                         ( E.max_ (bid   ^. BidPrice)
                         )
 
-    liftIO $ print highestBid
-    return True
+    let (E.Value mHighestBid) = DL.head highestBidsResult
+    liftIO $ print mHighestBid
+    return $ maybe True (\highestBid ->  bidPrice bidEntity > highestBid) mHighestBid
