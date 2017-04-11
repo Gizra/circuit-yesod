@@ -54,6 +54,37 @@ spec = withApp $ do
             get $ RestfulBidR bidId
             bodyContains "\"bidder\":null"
 
+        it "should show `is_winning` property for a single bid" $ do
+            userEntity <- createUser "john"
+            let (Entity uid _) = userEntity
+
+            (Entity saleId _)  <-  createSale uid "sale1"
+            (Entity itemId _)  <- createItem uid saleId "item1" 0 10 100
+            (Entity bidId _) <- createBid uid itemId 150
+
+            authenticateAs userEntity
+            get $ RestfulBidR bidId
+            bodyContains "\"is_winning\":true"
+
+        it "should show `is_winning` property for winning and lossing bids" $ do
+          userEntity <- createUser "john"
+          let (Entity uid _) = userEntity
+
+          (Entity saleId _)  <-  createSale uid "sale1"
+          (Entity itemId _)  <- createItem uid saleId "item1" 0 10 100
+          (Entity firstBidId _) <- createBid uid itemId 150
+
+          (Entity loosingBidId _) <- createBid uid itemId 500
+          (Entity winningBidId _) <- createBid uid itemId 900
+
+          authenticateAs userEntity
+          get $ RestfulBidR loosingBidId
+          bodyContains "\"is_winning\":false"
+
+          get $ RestfulBidR winningBidId
+          bodyContains "\"is_winning\":true"
+
+
         it "should allow user to create a bid" $ do
             userEntity <- createUser "john"
             let (Entity uid _) = userEntity
