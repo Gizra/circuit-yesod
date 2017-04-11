@@ -28,6 +28,7 @@ library
                      Handler.RestfulBid
                      Handler.SseReceive
                      Model.Types
+                     Utils.Bid
                      Utils.AccessToken
                      Utils.ServerSentEvent
 
@@ -97,6 +98,7 @@ library
                  , case-insensitive
                  , wai
 
+                 , esqueleto
                  , foreign-store
                  , random-strings
                  , resource-pool
