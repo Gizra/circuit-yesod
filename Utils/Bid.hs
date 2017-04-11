@@ -13,12 +13,13 @@ isWinning bidEntityId bidEntity = do
     highestBidsResult <- runDB
                . E.select
                . E.from $ \bid -> do
+                    -- Bids of item, except of current bid.
                     E.where_ $ bid ^. BidItem E.==. (E.val $ bidItem bidEntity)
                              E.&&. bid ^. BidId E.!=. (E.val bidEntityId)
                     return
+                        -- SELECT MAX(price).
                         ( E.max_ (bid   ^. BidPrice)
                         )
 
     let (E.Value mHighestBid) = DL.head highestBidsResult
-    liftIO $ print mHighestBid
     return $ maybe True (\highestBid ->  bidPrice bidEntity > highestBid) mHighestBid
