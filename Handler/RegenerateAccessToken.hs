@@ -3,6 +3,8 @@ module Handler.RegenerateAccessToken where
 import Import
 import Utils.AccessToken
 
+-- @todo: The `uid` here is just to satisfy the types. Need to figure how to
+-- create a confirmation form without any data - just the CSRF token.
 data Confirmation = Confirmation
     { uid :: UserId
     }
