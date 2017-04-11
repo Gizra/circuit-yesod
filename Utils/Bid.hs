@@ -1,5 +1,5 @@
 module Utils.Bid
-  ( isWinningBid
+  ( isWinning
   ) where
 
 import qualified Data.List          as DL (head)
@@ -7,8 +7,8 @@ import           Database.Esqueleto ((^.))
 import qualified Database.Esqueleto as E
 import           Import
 
-isWinningBid :: BidId -> Bid -> Handler Bool
-isWinningBid bidEntityId bidEntity = do
+isWinning :: BidId -> Bid -> Handler Bool
+isWinning bidEntityId bidEntity = do
     -- Get the height bid of an item.
     highestBidsResult <- runDB
                . E.select

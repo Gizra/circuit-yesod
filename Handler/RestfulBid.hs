@@ -3,6 +3,7 @@ module Handler.RestfulBid where
 import qualified Data.HashMap.Strict   as HM (insert)
 import           Import
 import           Model.Types           (BidType (BidTypeLive))
+import           Utils.Bid
 import           Utils.ServerSentEvent
 
 
@@ -28,10 +29,14 @@ getRestfulBidR bidId = do
     let bidWithMetaData = addMetaData urlRenderParams params bidId bid
 
     muid <- maybeAuthId
+    let bidWithSanitizedProperties = sanitiziePrivateProperties muid bid bidWithMetaData
 
-    let bidWithMetaDataAndSanitizedUser = sanitiziePrivateProperties muid bid bidWithMetaData
+    isWinningBid <- isWinning bidId bid
+    let bidWithIsWinning = fmap (\hash ->
+                          HM.insert "is_winning" (Bool isWinningBid) hash
+                       ) bidWithSanitizedProperties
 
-    return $ object ["data" .= bidWithMetaDataAndSanitizedUser]
+    return $ object ["data" .= bidWithIsWinning]
 
 
 sanitiziePrivateProperties :: Maybe (Key User) -> Bid -> Maybe (HashMap Text Value) -> Maybe (HashMap Text Value)
