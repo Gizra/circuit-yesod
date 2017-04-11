@@ -2,9 +2,9 @@ module Utils.ServerSentEvent
   ( sendMessage
   ) where
 
-import Data.Aeson.Encode (encodeToBuilder)
-import Network.Wai.EventSource
-import Import
+import           Data.Aeson.Encode       (encodeToBuilder)
+import           Import
+import           Network.Wai.EventSource
 
 
 sendMessage :: ToJSON a => SseEventName -> a -> Handler ()
