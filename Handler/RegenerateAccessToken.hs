@@ -15,7 +15,6 @@ confirmationForm userId = renderDivs $ Confirmation
 getRegenerateAccessTokenR :: UserId -> Handler Html
 getRegenerateAccessTokenR userId = do
   (widget, enctype) <- generateFormPost $ confirmationForm userId
-  request <- getRequest
 
   defaultLayout $ do
       setTitle "Regenerate Access Token"
@@ -32,9 +31,9 @@ getRegenerateAccessTokenR userId = do
 
 postRegenerateAccessTokenR :: UserId -> Handler Html
 postRegenerateAccessTokenR userId = do
-  ((result, widget), enctype) <- runFormPost $ confirmationForm userId
+  ((result, _), _) <- runFormPost $ confirmationForm userId
   case result of
-      FormSuccess confirmation -> do
+      FormSuccess _ -> do
         -- Update acceess token.
         let isoAlpha = onlyAlphaNum randomASCII
         accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
