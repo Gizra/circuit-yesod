@@ -2,11 +2,9 @@ module Foundation where
 
 import Import.NoFoundation
 import qualified Data.CaseInsensitive as CI
-import qualified Data.List as DL (head)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import qualified Data.Text.Encoding as TE
 import Network.Wai.EventSource
-import Test.RandomStrings
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
@@ -14,6 +12,7 @@ import Yesod.Auth.Dummy
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
+import Utils.AccessToken
 
 
 -- | The foundation datatype for your application. This can be a good place to
@@ -236,10 +235,8 @@ instance YesodAuth App where
                 , userPassword = Nothing
                 }
 
-              -- Create random access token for the new user.
-              let isoAlpha = onlyAlphaNum randomASCII
-              accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
-              let accessTokenText = pack $ DL.head accessTokenStrings :: Text
+              -- Create access token for the new user.
+              accessTokenText <- generateToken
 
               currentTime <- liftIO getCurrentTime
               _ <- insert $ AccessToken currentTime uid accessTokenText

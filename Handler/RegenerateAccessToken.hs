@@ -1,8 +1,7 @@
 module Handler.RegenerateAccessToken where
 
-import qualified Data.List as DL (head)
 import Import
-import Test.RandomStrings
+import Utils.AccessToken
 
 data Confirmation = Confirmation
     { uid :: UserId
@@ -35,12 +34,8 @@ postRegenerateAccessTokenR userId = do
   case result of
       FormSuccess _ -> do
         -- Update acceess token.
-        let isoAlpha = onlyAlphaNum randomASCII
-        accessTokenStrings <- liftIO $ randomStrings (randomString isoAlpha 25) 1
-        let accessTokenText = pack $ DL.head accessTokenStrings :: Text
-
+        accessTokenText <- generateToken
         currentTime <- liftIO getCurrentTime
-
         mToken <- runDB $ selectFirst [AccessTokenUserId ==. userId] []
 
         case mToken of
