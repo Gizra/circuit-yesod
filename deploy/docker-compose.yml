@@ -17,6 +17,9 @@ services:
         - POSTGRES_USER=root
         - POSTGRES_PASSWORD=root
         - POSTGRES_DB=circuit
+        - PGDATA=/var/lib/postgresql/data/pgdata
+      volumes:
+       - db-volume:/var/lib/postgresql/data
 
     circuit_0:
       image: circuit
@@ -29,4 +32,7 @@ services:
     circuit_2:
       image: circuit
       ports:
-        - 3002:3000
+        - 3002:300
+
+volumes:
+    db-volume:
