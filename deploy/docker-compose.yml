@@ -1,5 +1,16 @@
 version: '2' 
 services:
+    loadbalancer:
+      image: jasonwyatt/nginx-loadbalancer
+      environment:
+        - CIRCUIT_PATH=/
+        - CIRCUIT_1_PORT_3000_TCP_ADDR=circuit_0
+        - CIRCUIT_2_PORT_3000_TCP_ADDR=circuit_1
+        - CIRCUIT_3_PORT_3000_TCP_ADDR=circuit_2
+        - CIRCUIT_REMOTE_PORT=3000
+      ports:
+        - 80:80
+
     db:
       image: postgres
       environment:
@@ -7,7 +18,15 @@ services:
         - POSTGRES_PASSWORD=root
         - POSTGRES_DB=circuit
 
-    circuit:
+    circuit_0:
       image: circuit
       ports:
         - 3000:3000
+    circuit_1:
+      image: circuit
+      ports:
+        - 3001:3000
+    circuit_2:
+      image: circuit
+      ports:
+        - 3002:3000
