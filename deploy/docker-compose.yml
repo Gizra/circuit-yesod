@@ -1,0 +1,10 @@
+version: '2' 
+services:
+    db:
+      image: postgres
+      environment:
+        - POSTGRES_USER=root
+        - POSTGRES_PASSWORD=root
+        - POSTGRES_DB=circuit
+      ports:
+        - 5432:5432
