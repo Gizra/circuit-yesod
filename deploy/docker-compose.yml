@@ -6,5 +6,8 @@ services:
         - POSTGRES_USER=root
         - POSTGRES_PASSWORD=root
         - POSTGRES_DB=circuit
+
+    circuit:
+      image: circuit
       ports:
-        - 5432:5432
+        - 3000:3000
