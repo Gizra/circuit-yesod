@@ -10,7 +10,7 @@ scenarios:
         label: loginpage
         extract-regexp:
           form_token: <input name="_token" value="(\w+)" type="hidden">
-      - url: http://172.104.150.92/auth/login
+      - url: http://172.104.150.92/auth/page/dummy
         method: POST
         body:
           ident: admin
