@@ -11,7 +11,8 @@ getRestfulItemsR saleId= do
                   -- Get Items related to the sale.
                   -- @todo: Add pagination.
                    let selectFilters = [ItemSale ==. saleId]
-                   items <- runDB $ selectList selectFilters [] :: Handler [Entity Item]
+                   let selectOptions = [LimitTo 20]
+                   items <- runDB $ selectList selectFilters selectOptions :: Handler [Entity Item]
                    totalCount <- runDB $ count (selectFilters :: [Filter Item])
                    return $ object
                               [ "data" .= toJSON items
