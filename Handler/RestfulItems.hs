@@ -10,8 +10,13 @@ getRestfulItemsR saleId= do
               SaleStatusActive -> do
                   -- Get Items related to the sale.
                   -- @todo: Add pagination.
-                   items <- runDB $ selectList [ItemSale ==. saleId] [] :: Handler [Entity Item]
-                   return $ object ["data" .= toJSON items]
+                   let selectFilters = [ItemSale ==. saleId]
+                   items <- runDB $ selectList selectFilters [] :: Handler [Entity Item]
+                   totalCount <- runDB $ count (selectFilters :: [Filter Item])
+                   return $ object
+                              [ "data" .= toJSON items
+                              , "count" .= totalCount
+                              ]
               _ ->
                   -- Don't show items for non-active sales.
                   invalidArgs ["Cannot get items for a Sale that is not currently active."]
