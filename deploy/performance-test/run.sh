@@ -1,12 +1,12 @@
 #!/bin/bash
 
-if ! hash jmeter 2>/dev/null; then
-  echo "JMeter is required, make it available in the path"
+if ! hash bzt 2>/dev/null; then
+  echo "Taurus is required, visit http://gettaurus.org/docs/Installation"
   exit 1
 fi
 
-for TEST in *jmx
+for TEST in *yml
 do
   echo "Executing $TEST"
-  jmeter -n -j "jmeter-${TEST%.jmx}.log" -t "$TEST"
+  bzt "$TEST"
 done;

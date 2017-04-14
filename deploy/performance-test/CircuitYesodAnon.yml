@@ -1,0 +1,19 @@
+execution:
+- concurrency: 1
+  scenario: CircuitBidAnon
+  
+scenarios:
+  CircuitBidAnon:
+    retrieve-resources: true
+    requests:
+      - http://172.104.150.92/auth/login
+
+reporting:
+- module: final-stats
+- module: console
+
+settings:
+  check-interval: 5s
+  default-executor: jmeter
+
+provisioning: local
