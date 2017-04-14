@@ -11,7 +11,7 @@ Sale
     created         UTCTime
     user            UserId
     deriving        Show Generic
-Item
+Item json
     sale            SaleId
     label           Text
     minimumPrice    Int

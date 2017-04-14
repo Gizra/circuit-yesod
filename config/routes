@@ -7,14 +7,19 @@
 / HomeR GET
 
 /profile ProfileR GET
+/regenerate-access-token/#UserId RegenerateAccessTokenR GET POST
 
 /add/bid CreateBidR GET POST
 
 /bid/#BidId BidR GET
 /bid/#BidId/edit EditBidR GET POST
 
-/sse-receive SseReceiveR GET
+
+/api/items/#SaleId RestfulItemsR GET
+/api/item/#ItemId RestfulItemR GET POST PUT DELETE
+
 
 /api/bids RestfulBidsR POST
 /api/bids/#BidId RestfulBidR GET PUT DELETE
-/regenerate-access-token/#UserId RegenerateAccessTokenR GET POST
+
+/sse-receive SseReceiveR GET
