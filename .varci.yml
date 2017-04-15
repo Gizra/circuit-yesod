@@ -1,0 +1,11 @@
+ruleset:
+  screenshot_on_style_changes:
+    name: "Require screenshot when there are style changes"
+    events: [ pull_request ]
+    message: >
+      @{{ user.login }}, please include screenshot(s) when making style changes so
+      we can review the new look and feel. Thanks!
+    when:
+      - action = "opened"
+      - count(filter(files, "[name=/\.css$/]")) > 0
+      - not(body matches "/!\[image\]\(.*?\)/")
