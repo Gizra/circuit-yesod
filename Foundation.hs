@@ -170,7 +170,6 @@ instance Yesod App where
     isAuthorized (RestfulBidR _) _ = isAuthenticated
     isAuthorized RestfulBidsR _ = isAuthenticated
 
-    isAuthorized (RestfulItemR _) _ = isAuthenticated
     isAuthorized (RestfulItemsR _) _ = isAuthenticated
 
     -- This function creates static content files in the static folder

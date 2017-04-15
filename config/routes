@@ -16,7 +16,6 @@
 
 
 /api/items/#SaleId RestfulItemsR GET
-/api/item/#ItemId RestfulItemR GET POST PUT DELETE
 
 
 /api/bids RestfulBidsR POST

@@ -23,7 +23,6 @@ library
                      Handler.Bid
                      Handler.Common
                      Handler.Home
-                     Handler.RestfulItem
                      Handler.RestfulItems
                      Handler.Profile
                      Handler.RegenerateAccessToken
@@ -124,6 +123,7 @@ test-suite test
                        Handler.HomeSpec
                        Handler.ProfileSpec
                        Handler.RestfulBidSpec
+                       Handler.RestfulItemsSpec
                        Handler.RegenerateAccessTokenSpec
                        TestImport
     hs-source-dirs:    test
