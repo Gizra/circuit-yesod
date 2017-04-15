@@ -257,8 +257,7 @@ instance YesodAuth App where
           let baseUrl = urlRender HomeR
 
           mCurrentRoute <- getCurrentRoute
-          liftIO $ print $ "appRoot: " ++ baseUrl
-          liftIO $ print $ maybe "" (\currentRoute -> TX.drop (length baseUrl) (urlRender currentRoute)) mCurrentRoute
+          -- Determine if route is prefixed with "/api"
           let isApiRoute = maybe
                 False
                 (\currentRoute ->
@@ -282,7 +281,7 @@ instance YesodAuth App where
                   [] -> Nothing
                   (x : _) -> Just x
             else
-              -- Fallback to the default authentication
+              -- Fallback to the default authentication.
               defaultMaybeAuthId
 
 
