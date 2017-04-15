@@ -2,6 +2,7 @@ module Foundation where
 
 import Import.NoFoundation
 import qualified Data.CaseInsensitive as CI
+import qualified Data.Text as TX
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import qualified Data.Text.Encoding as TE
 import Network.Wai.EventSource
@@ -249,15 +250,37 @@ instance YesodAuth App where
     -- Try to authenticate with the access token.
     maybeAuthId = do
           mToken <- lookupGetParam "access_token"
-          tokenAuth <- case mToken of
-              Nothing -> return Nothing
-              Just token -> do
-                  mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
-                  return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
-          defaultAuth <- defaultMaybeAuthId
-          return $ case catMaybes [defaultAuth, tokenAuth] of
-              [] -> Nothing
-              (x : _) -> Just x
+          urlRender <- getUrlRender
+          let baseUrl = urlRender HomeR
+
+          mCurrentRoute <- getCurrentRoute
+          -- Determine if route is prefixed with "/api"
+          let isApiRoute = maybe
+                False
+                (\currentRoute ->
+                    let
+                      -- Strip the base URL.
+                      route = TX.drop (length baseUrl) (urlRender currentRoute)
+                    in
+                      isPrefixOf "api/" route
+                )
+                mCurrentRoute
+
+          if isApiRoute
+            then do
+              tokenAuth <- case mToken of
+                  Nothing -> return Nothing
+                  Just token -> do
+                      mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
+                      return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
+              defaultAuth <- defaultMaybeAuthId
+              return $ case catMaybes [defaultAuth, tokenAuth] of
+                  [] -> Nothing
+                  (x : _) -> Just x
+            else
+              -- Fallback to the default authentication.
+              defaultMaybeAuthId
+
 
     authHttpManager = getHttpManager
 
