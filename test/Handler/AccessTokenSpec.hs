@@ -41,6 +41,32 @@ spec = withApp $ do
             case mUser of
                 Nothing ->
                     assertEq "New logged in user was not found" False True
-                Just user -> do
+                Just _ -> do
                     get ProfileR
                     htmlAnyContain ".access-token > div" "Access token:"
+
+
+        it "should show allow access to RESTful routes with valid access token" $ do
+          currentTime <- liftIO getCurrentTime
+
+          userEntity <- createUser "foo"
+          let (Entity uid _) = userEntity
+
+          _ <- runDB . insert $ AccessToken currentTime uid "someRandomToken"
+
+          (Entity saleId _)  <-  createSale uid "sale1"
+          (Entity itemId _)  <- createItem uid saleId "item1" 0 10 100
+          (Entity bidId _) <- createBid uid itemId 150
+
+          request $ do
+              setMethod "GET"
+              setUrl $ RestfulBidR bidId
+              addGetParam "access_token" "someRandomToken"
+
+          statusIs 200
+
+          request $ do
+              setMethod "GET"
+              setUrl $ RestfulBidR bidId
+
+          statusIs 403
