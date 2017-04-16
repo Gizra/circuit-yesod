@@ -1,6 +1,8 @@
 module Utils.Restful
   ( getEntityList
+  , getItemsForEntityList
   , getTotalCount
+  , renderEntityList
   ) where
 
 import qualified Data.Text        as T (pack)
@@ -11,9 +13,13 @@ import           Yesod.Core.Types
 
 
 getEntityList route selectFilters = do
-    mpage <- lookupGetParam "page"
-    params <- reqGetParams <$> getRequest
+    (mItems, totalCount) <- getItemsForEntityList route selectFilters
 
+    renderEntityList route selectFilters mItems totalCount
+
+
+getItemsForEntityList route selectFilters = do
+    mpage <- lookupGetParam "page"
     selectOpt <- returnValueOrThrowException . (addPager mpage 3) $ []
 
     totalCount <- getTotalCount selectFilters
@@ -21,10 +27,15 @@ getEntityList route selectFilters = do
     -- @todo: Re-query only if count has values.
     mItems <- runDB $ selectList selectFilters selectOpt
 
+    return (mItems, totalCount)
+
+renderEntityList route selectFilters mItems totalCount = do
+    params <- reqGetParams <$> getRequest
     urlRenderParams <- getUrlRenderParams
 
     let eventsWithMetaData = addListMetaData urlRenderParams route params totalCount ["data" .= toJSON mItems]
     return $ object eventsWithMetaData
+
 
 
 returnValueOrThrowException :: MonadIO m

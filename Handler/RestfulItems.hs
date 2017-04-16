@@ -8,18 +8,9 @@ getRestfulItemsR :: SaleId -> Handler Value
 getRestfulItemsR saleId= do
   sale <- runDB $ get404 saleId
   case saleStatus sale of
-              SaleStatusActive -> do
-                  -- Get Items related to the sale.
-                  -- @todo: Add pagination.
-                   let selectFilters = [ItemSale ==. saleId]
+              SaleStatusActive ->
                    getEntityList (RestfulItemsR saleId) selectFilters
-                  --  let selectOptions = [LimitTo 20]
-                  --  items <- runDB $ selectList selectFilters selectOptions :: Handler [Entity Item]
-                  --  totalCount <- runDB $ count (selectFilters :: [Filter Item])
-                  --  return $ object
-                  --             [ "data" .= toJSON items
-                  --             , "count" .= totalCount
-                  --             ]
+                   where selectFilters = [ItemSale ==. saleId]
               _ ->
                   -- Don't show items for non-active sales.
                   invalidArgs ["Cannot get items for a Sale that is not currently active."]
