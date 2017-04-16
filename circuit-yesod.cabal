@@ -23,6 +23,7 @@ library
                      Handler.Bid
                      Handler.Common
                      Handler.Home
+                     Handler.RestfulItem
                      Handler.RestfulItems
                      Handler.Profile
                      Handler.RegenerateAccessToken
@@ -124,6 +125,7 @@ test-suite test
                        Handler.HomeSpec
                        Handler.ProfileSpec
                        Handler.RestfulBidSpec
+                       Handler.RestfulItemSpec
                        Handler.RestfulItemsSpec
                        Handler.RegenerateAccessTokenSpec
                        TestImport

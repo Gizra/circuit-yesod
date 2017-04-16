@@ -16,6 +16,7 @@
 
 
 /api/items/#SaleId RestfulItemsR GET
+/api/items/#SaleId/#ItemId RestfulItemR GET
 
 
 /api/bids RestfulBidsR POST

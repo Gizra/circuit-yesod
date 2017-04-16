@@ -9,7 +9,7 @@ getRestfulItemsR saleId= do
   sale <- runDB $ get404 saleId
   case saleStatus sale of
               SaleStatusActive ->
-                   getEntityList (RestfulItemsR saleId) selectFilters
+                   getEntityList (RestfulItemsR saleId) (RestfulItemR saleId) selectFilters
                    where selectFilters = [ItemSale ==. saleId]
               _ ->
                   -- Don't show items for non-active sales.
