@@ -19,7 +19,7 @@ getEntityList :: (PersistEntity val, ToJSON (Entity val), YesodPersist site,
 getEntityList route selectFilters = do
     (mItems, totalCount) <- getItemsForEntityList selectFilters
 
-    renderEntityList route selectFilters mItems totalCount
+    renderEntityList route mItems totalCount
 
 
 getItemsForEntityList :: (PersistEntity val, YesodPersist site,
@@ -39,8 +39,8 @@ getItemsForEntityList selectFilters = do
     return (mItems, totalCount)
 
 renderEntityList :: (MonadHandler m, ToJSON v, ToJSON a) =>
-                    Route (HandlerSite m) -> t -> a -> v -> m Value
-renderEntityList route selectFilters mItems totalCount = do
+                    Route (HandlerSite m) -> a -> v -> m Value
+renderEntityList route mItems totalCount = do
     params <- reqGetParams <$> getRequest
     urlRenderParams <- getUrlRenderParams
 
@@ -74,7 +74,6 @@ addPager mpage resultsPerPage selectOpt =
             Right $ selectOpt ++ limitTo ++ offsetBy
             where limitTo = [ LimitTo resultsPerPage ]
                   offsetBy = [ OffsetBy $ (pageNumber - 1) * resultsPerPage | pageNumber > 0]
-
 
 addListMetaData urlRenderParams route params totalCount keyValues =
     keyValues ++ metaData
