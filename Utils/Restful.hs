@@ -13,12 +13,12 @@ import           Yesod.Core.Types
 
 
 getEntityList route selectFilters = do
-    (mItems, totalCount) <- getItemsForEntityList route selectFilters
+    (mItems, totalCount) <- getItemsForEntityList selectFilters
 
     renderEntityList route selectFilters mItems totalCount
 
 
-getItemsForEntityList route selectFilters = do
+getItemsForEntityList selectFilters = do
     mpage <- lookupGetParam "page"
     selectOpt <- returnValueOrThrowException . (addPager mpage 3) $ []
 
