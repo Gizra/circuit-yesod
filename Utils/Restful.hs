@@ -1,25 +1,30 @@
 module Utils.Restful
-  ( getEntityList
+  ( addEntityMetaData
+  , getEntityList
   , getItemsForEntityList
   , getTotalCount
   , renderEntityList
   ) where
 
-import qualified Data.Text        as T (pack)
-import qualified Data.Text.Read   as T (decimal)
+import qualified Data.Text           as T (pack)
+import qualified Data.Text.Read      as T (decimal)
+import qualified Data.HashMap.Strict as HM (insert)
 import           Import
 import           Yesod.Core.Types
 
 
-getEntityList :: (PersistEntity val, ToJSON (Entity val), YesodPersist site,
+getEntityList :: (PersistEntity t, ToJSON (Entity t), YesodPersist site,
                   PersistQuery (YesodPersistBackend site),
-                  PersistQuery (PersistEntityBackend val),
-                  PersistEntityBackend val ~ YesodPersistBackend site) =>
-                 Route site -> [Filter val] -> HandlerT site IO Value
-getEntityList route selectFilters = do
-    (mItems, totalCount) <- getItemsForEntityList selectFilters
+                  PersistQuery (PersistEntityBackend t),
+                  PersistEntityBackend t ~ YesodPersistBackend site) =>
+                 Route site
+                 -> (Key t -> Route site)
+                 -> [Filter t]
+                 -> HandlerT site IO Value
+getEntityList listRoute partialEntityRoute selectFilters = do
+    (items, totalCount) <- getItemsForEntityList selectFilters
 
-    renderEntityList route mItems totalCount
+    renderEntityList listRoute partialEntityRoute items totalCount
 
 
 getItemsForEntityList :: (PersistEntity val, YesodPersist site,
@@ -34,18 +39,28 @@ getItemsForEntityList selectFilters = do
     totalCount <- getTotalCount selectFilters
 
     -- @todo: Re-query only if count has values.
-    mItems <- runDB $ selectList selectFilters selectOpt
+    items <- runDB $ selectList selectFilters selectOpt
 
-    return (mItems, totalCount)
+    return (items, totalCount)
 
-renderEntityList :: (MonadHandler m, ToJSON v, ToJSON a) =>
-                    Route (HandlerSite m) -> a -> v -> m Value
-renderEntityList route mItems totalCount = do
-    params <- reqGetParams <$> getRequest
-    urlRenderParams <- getUrlRenderParams
+renderEntityList :: (MonadHandler m, ToJSON v, ToJSON (Entity t)) =>
+                    Route (HandlerSite m)
+                    -> (Key t -> Route (HandlerSite m))
+                    -> [Entity t]
+                    -> v
+                    -> m Value
+renderEntityList listRoute partialEntityRoute items totalCount = do
+    urlRender <- getUrlRender
 
-    let eventsWithMetaData = addListMetaData urlRenderParams route params totalCount ["data" .= toJSON mItems]
-    return $ object eventsWithMetaData
+    let itemsWithEntityMetaData =
+          fmap
+          (\(Entity entityId entity) ->
+              addEntityMetaData urlRender partialEntityRoute entityId entity
+          )
+          items :: [Maybe (HashMap Text Value)]
+
+    let itemsWithListMetaData = addListMetaData urlRender listRoute totalCount ["data" .= (itemsWithEntityMetaData)]
+    return $ object itemsWithListMetaData
 
 
 
@@ -75,14 +90,13 @@ addPager mpage resultsPerPage selectOpt =
             where limitTo = [ LimitTo resultsPerPage ]
                   offsetBy = [ OffsetBy $ (pageNumber - 1) * resultsPerPage | pageNumber > 0]
 
-addListMetaData urlRenderParams route params totalCount keyValues =
+addListMetaData urlRender route totalCount keyValues =
     keyValues ++ metaData
 
     where metaData =
-            [ "self" .= urlRenderParams route params
+            [ "self" .= urlRender route
             , "count" .= totalCount
             ]
-
 
 getTotalCount :: (PersistEntity val, YesodPersist site,
                   PersistQuery (YesodPersistBackend site),
@@ -90,3 +104,11 @@ getTotalCount :: (PersistEntity val, YesodPersist site,
                  [Filter val] -> HandlerT site IO Int
 getTotalCount filters =
   runDB $ count filters
+
+
+addEntityMetaData urlRender route entityId entity =
+    case toJSON (Entity entityId entity) of
+        Object obj -> Just $ HM.insert "self" self obj
+        _          -> Nothing
+
+    where self = String $ urlRender (route entityId)
