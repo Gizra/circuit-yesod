@@ -1,7 +1,7 @@
 module Handler.Home where
 
-import Import
-import Database.Persist.Sql (fromSqlKey)
+import           Database.Persist.Sql (fromSqlKey)
+import           Import
 
 getHomeR :: Handler Html
 getHomeR = do

@@ -1,7 +1,8 @@
 module Handler.RestfulItems where
 
 import           Import
-import           Model.Types (SaleStatus (..))
+import           Model.Types   (SaleStatus (..))
+import           Utils.Restful (getEntityList)
 
 getRestfulItemsR :: SaleId -> Handler Value
 getRestfulItemsR saleId= do
@@ -11,13 +12,14 @@ getRestfulItemsR saleId= do
                   -- Get Items related to the sale.
                   -- @todo: Add pagination.
                    let selectFilters = [ItemSale ==. saleId]
-                   let selectOptions = [LimitTo 20]
-                   items <- runDB $ selectList selectFilters selectOptions :: Handler [Entity Item]
-                   totalCount <- runDB $ count (selectFilters :: [Filter Item])
-                   return $ object
-                              [ "data" .= toJSON items
-                              , "count" .= totalCount
-                              ]
+                   getEntityList (RestfulItemsR saleId) selectFilters
+                  --  let selectOptions = [LimitTo 20]
+                  --  items <- runDB $ selectList selectFilters selectOptions :: Handler [Entity Item]
+                  --  totalCount <- runDB $ count (selectFilters :: [Filter Item])
+                  --  return $ object
+                  --             [ "data" .= toJSON items
+                  --             , "count" .= totalCount
+                  --             ]
               _ ->
                   -- Don't show items for non-active sales.
                   invalidArgs ["Cannot get items for a Sale that is not currently active."]

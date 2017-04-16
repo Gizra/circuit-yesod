@@ -29,8 +29,9 @@ library
                      Handler.RestfulBid
                      Handler.SseReceive
                      Model.Types
-                     Utils.Bid
                      Utils.AccessToken
+                     Utils.Bid
+                     Utils.Restful
                      Utils.ServerSentEvent
 
     if flag(dev) || flag(library-only)
