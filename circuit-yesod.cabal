@@ -23,13 +23,15 @@ library
                      Handler.Bid
                      Handler.Common
                      Handler.Home
+                     Handler.RestfulItems
                      Handler.Profile
                      Handler.RegenerateAccessToken
                      Handler.RestfulBid
                      Handler.SseReceive
                      Model.Types
-                     Utils.Bid
                      Utils.AccessToken
+                     Utils.Bid
+                     Utils.Restful
                      Utils.ServerSentEvent
 
     if flag(dev) || flag(library-only)
@@ -122,6 +124,7 @@ test-suite test
                        Handler.HomeSpec
                        Handler.ProfileSpec
                        Handler.RestfulBidSpec
+                       Handler.RestfulItemsSpec
                        Handler.RegenerateAccessTokenSpec
                        TestImport
     hs-source-dirs:    test
