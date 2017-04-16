@@ -20,8 +20,9 @@ getRestfulItemR saleId itemId = do
 
                   return $ object ["data" .= toJSON itemWithMetaData]
               else
-                  -- Don't allow seeing an item is the sale ID isn't the right
-                  -- one.
+                  -- Don't allow seeing an item if the passed sale ID isn't the right
+                  -- one. That is if for example we have /api/items/10/1 and
+                  -- Item ID (1) doesn't belong to sale ID (10).
                   invalidArgs ["Item's sale doesn't match the Sale ID you have passed."]
       else
         invalidArgs ["Cannot get items for a Sale that is not currently active."]
