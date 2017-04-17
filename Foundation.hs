@@ -163,11 +163,7 @@ instance Yesod App where
     isAuthorized SseReceiveR _ = return Authorized
 
     isAuthorized (AuthR LogoutR) _ = isAuthenticated
-    isAuthorized (AuthR _) _ = do
-        mu <- maybeAuthId
-        return $ case mu of
-            Nothing -> Authorized
-            Just _ -> Unauthorized "As a logged in user, you cannot re-login. You must Logout first."
+    isAuthorized (AuthR _) _ = return Authorized
 
     isAuthorized (BidR _) _ = isAuthenticated
     isAuthorized CreateBidR _ = isAuthenticated
