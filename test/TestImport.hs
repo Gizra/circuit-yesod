@@ -73,6 +73,8 @@ createUser ident = do
     runDB $ insertEntity User
         { userIdent = ident
         , userPassword = Nothing
+        , userVerkey = Nothing
+        , userVerified = True
         }
 
 -- | Create a Sale.

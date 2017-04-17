@@ -9,11 +9,19 @@ import Network.Wai.EventSource
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
+import Yesod.Auth.Email
 -- ^ Used only when in development mode.
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import Utils.AccessToken
+
+
+import           Text.Blaze.Html.Renderer.Utf8 (renderHtml)
+import qualified Data.Text.Lazy.Encoding
+import           Text.Shakespeare.Text    (stext)
+import           Network.Mail.Mime
+
 
 
 -- | The foundation datatype for your application. This can be a good place to
@@ -237,6 +245,8 @@ instance YesodAuth App where
               uid <- insert User
                 { userIdent = credsIdent creds
                 , userPassword = Nothing
+                , userVerkey = Nothing
+                , userVerified = True
                 }
 
               -- Create access token for the new user.
@@ -246,7 +256,7 @@ instance YesodAuth App where
               _ <- insert $ AccessToken currentTime uid accessTokenText
               return $ Authenticated uid
 
-    authPlugins app = [] ++ extraAuthPlugins
+    authPlugins app = [ authEmail ] ++ extraAuthPlugins
         -- Enable authDummy login when in development mode.
         where extraAuthPlugins = [authDummy | appDevelopment $ appSettings app]
 
@@ -286,6 +296,79 @@ instance YesodAuth App where
 
 
     authHttpManager = getHttpManager
+
+
+instance YesodAuthEmail App where
+    type AuthEmailId App = UserId
+
+    afterPasswordRoute _ = HomeR
+
+    addUnverified email verkey =
+        runDB $ insert $ User email Nothing (Just verkey) False
+
+    sendVerifyEmail email _ verurl = do
+        -- Print out to the console the verification email, for easier
+        -- debugging.
+        liftIO $ putStrLn $ "Copy/ Paste this URL in your browser:" ++ verurl
+
+        -- Send email.
+        liftIO $ renderSendMail (emptyMail $ Address Nothing "noreply")
+            { mailTo = [Address Nothing email]
+            , mailHeaders =
+                [ ("Subject", "Verify your email address")
+                ]
+            , mailParts = [[textPart, htmlPart]]
+            }
+      where
+        textPart = Part
+            { partType = "text/plain; charset=utf-8"
+            , partEncoding = None
+            , partFilename = Nothing
+            , partContent = Data.Text.Lazy.Encoding.encodeUtf8
+                [stext|
+                    Please confirm your email address by clicking on the link below.
+
+                    #{verurl}
+
+                    Thank you
+                |]
+            , partHeaders = []
+            }
+        htmlPart = Part
+            { partType = "text/html; charset=utf-8"
+            , partEncoding = None
+            , partFilename = Nothing
+            , partContent = renderHtml
+                [shamlet|
+                    <p>Please confirm your email address by clicking on the link below.
+                    <p>
+                        <a href=#{verurl}>#{verurl}
+                    <p>Thank you
+                |]
+            , partHeaders = []
+            }
+    getVerifyKey = runDB . fmap (join . fmap userVerkey) . get
+    setVerifyKey uid key = runDB $ update uid [UserVerkey =. Just key]
+    verifyAccount uid = runDB $ do
+        mu <- get uid
+        case mu of
+            Nothing -> return Nothing
+            Just u -> do
+                return $ Just uid
+    getPassword = runDB . fmap (join . fmap userPassword) . get
+    setPassword uid pass = runDB $ update uid [UserPassword =. Just pass]
+    getEmailCreds email = runDB $ do
+        mu <- getBy $ UniqueUser email
+        case mu of
+            Nothing -> return Nothing
+            Just (Entity uid u) -> return $ Just EmailCreds
+                { emailCredsId = uid
+                , emailCredsAuthId = Just uid
+                , emailCredsStatus = isJust $ userPassword u
+                , emailCredsVerkey = userVerkey u
+                , emailCredsEmail = email
+                }
+    getEmail = runDB . fmap (fmap userIdent) . get
 
 -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult

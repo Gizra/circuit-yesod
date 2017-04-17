@@ -1,6 +1,8 @@
 User
     ident Text
     password Text Maybe
+    verkey Text Maybe -- Used for resetting passwords
+    verified Bool
     UniqueUser ident
     deriving Typeable
 Sale

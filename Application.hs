@@ -159,6 +159,8 @@ migrateData pool = do
                 createUser name = User
                         { userIdent = name
                         , userPassword = Nothing
+                        , userVerkey = Nothing
+                        , userVerified = True
                         }
 
 

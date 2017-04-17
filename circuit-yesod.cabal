@@ -101,8 +101,10 @@ library
                  , case-insensitive
                  , wai
 
+                 , blaze-html
                  , esqueleto
                  , foreign-store
+                 , mime-mail
                  , random-strings
                  , resource-pool
 
