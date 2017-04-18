@@ -275,6 +275,10 @@ instance YesodAuth App where
                 )
                 mCurrentRoute
 
+          -- @todo: Get values form header.
+          let userFromHeader = ""
+          let passwordFromHeader = ""
+
           if isApiRoute
             then do
               tokenAuth <- case mToken of
@@ -283,7 +287,25 @@ instance YesodAuth App where
                       mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
                       return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
               defaultAuth <- defaultMaybeAuthId
-              return $ case catMaybes [defaultAuth, tokenAuth] of
+
+              -- Get user by username
+              -- if (not (TX.empty userFromHeader) && not (TX.empty passwordFromHeader))
+              baseAuth <- do
+                  mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
+                  return $
+                      maybe
+                      Nothing
+                      (\user ->
+                        let
+                            saltedPass = fromMaybe "" (userPassword $ entityVal user)
+                        in
+                            if (isValidPass passwordFromHeader saltedPass)
+                              then Just $ entityKey user
+                              else Nothing
+                      )
+                      mUser
+
+              return $ case catMaybes [defaultAuth, tokenAuth, baseAuth] of
                   [] -> Nothing
                   (x : _) -> Just x
             else
