@@ -275,9 +275,9 @@ instance YesodAuth App where
                 )
                 mCurrentRoute
 
-          -- @todo: Get values form header.
-          let userFromHeader = ""
-          let passwordFromHeader = ""
+          basicAuth <- lookupBasicAuth
+
+          let (userFromHeader, passwordFromHeader)= fromMaybe ("", "") basicAuth
 
           if isApiRoute
             then do
