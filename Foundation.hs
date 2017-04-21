@@ -289,7 +289,7 @@ instance YesodAuth App where
                       return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
               defaultAuth <- defaultMaybeAuthId
 
-              -- Get user by username
+              -- Determine if Basic auth was used and is valid.
               baseAuth <-
                   if (not (TX.null userFromHeader) && not (TX.null passwordFromHeader))
                       then do
