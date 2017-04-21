@@ -13,7 +13,12 @@ getOrGenerateToken :: (YesodPersist site, YesodPersistBackend site ~ SqlBackend)
 getOrGenerateToken uid = do
   mAccessToken <- runDB $ selectFirst [AccessTokenUserId ==. uid] []
   case mAccessToken of
-    Nothing -> generateToken
+    Nothing -> do
+      accessTokenText <- generateToken
+      currentTime <- liftIO getCurrentTime
+      _ <- insert $ AccessToken currentTime uid accessTokenText
+      return accessTokenText
+
     Just accessToken -> return $ accessTokenToken (entityVal accessToken)
 
 generateToken :: (MonadIO m) => m Text
