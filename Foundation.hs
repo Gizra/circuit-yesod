@@ -373,6 +373,11 @@ instance YesodAuthEmail App where
         case mu of
             Nothing -> return Nothing
             Just u -> do
+                -- Create access token for the new user.
+                accessTokenText <- generateToken
+                currentTime <- liftIO getCurrentTime
+                _ <- insert $ AccessToken currentTime uid accessTokenText
+
                 return $ Just uid
     getPassword = runDB . fmap (join . fmap userPassword) . get
     setPassword uid pass = runDB $ update uid [UserPassword =. Just pass]
