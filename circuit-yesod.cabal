@@ -23,6 +23,7 @@ library
                      Handler.Bid
                      Handler.Common
                      Handler.Home
+                     Handler.LoginToken
                      Handler.RestfulItem
                      Handler.RestfulItems
                      Handler.Profile
