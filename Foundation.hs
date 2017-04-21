@@ -247,10 +247,8 @@ instance YesodAuth App where
                 }
 
               -- Create access token for the new user.
-              accessTokenText <- generateToken
+              _ <- lift $ getOrGenerateToken uid
 
-              currentTime <- liftIO getCurrentTime
-              _ <- insert $ AccessToken currentTime uid accessTokenText
               return $ Authenticated uid
 
     authPlugins app = [ authEmail ] ++ extraAuthPlugins
@@ -374,9 +372,7 @@ instance YesodAuthEmail App where
             Nothing -> return Nothing
             Just u -> do
                 -- Create access token for the new user.
-                accessTokenText <- generateToken
-                currentTime <- liftIO getCurrentTime
-                _ <- insert $ AccessToken currentTime uid accessTokenText
+                _ <- lift $ getOrGenerateToken uid
 
                 return $ Just uid
     getPassword = runDB . fmap (join . fmap userPassword) . get
