@@ -290,21 +290,24 @@ instance YesodAuth App where
               defaultAuth <- defaultMaybeAuthId
 
               -- Get user by username
-              -- if (not (TX.empty userFromHeader) && not (TX.empty passwordFromHeader))
-              baseAuth <- do
-                  mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
-                  return $
-                      maybe
-                      Nothing
-                      (\user ->
-                        let
-                            saltedPass = fromMaybe "" (userPassword $ entityVal user)
-                        in
-                            if (isValidPass passwordFromHeader saltedPass)
-                              then Just $ entityKey user
-                              else Nothing
-                      )
-                      mUser
+              baseAuth <-
+                  if (not (TX.null userFromHeader) && not (TX.null passwordFromHeader))
+                      then do
+                          mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
+                          return $
+                              maybe
+                              Nothing
+                              (\user ->
+                                let
+                                    saltedPass = fromMaybe "" (userPassword $ entityVal user)
+                                in
+                                    if (isValidPass passwordFromHeader saltedPass)
+                                      then Just $ entityKey user
+                                      else Nothing
+                              )
+                              mUser
+                  else
+                      return Nothing
 
               return $ case catMaybes [defaultAuth, tokenAuth, baseAuth] of
                   [] -> Nothing
