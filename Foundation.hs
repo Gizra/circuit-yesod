@@ -121,7 +121,7 @@ instance Yesod App where
                     , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
-                    { menuItemLabel = "Dummy Login"
+                    { menuItemLabel = "Login"
                     , menuItemRoute = AuthR LoginR
                     , menuItemAccessCallback = (appDevelopment $ appSettings master) && isNothing muser
                     }
