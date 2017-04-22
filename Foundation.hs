@@ -259,7 +259,6 @@ instance YesodAuth App where
 
     -- Try to authenticate with the access token.
     maybeAuthId = do
-          mToken <- lookupGetParam "access_token"
           urlRender <- getUrlRender
           let baseUrl = urlRender HomeR
 
@@ -278,16 +277,21 @@ instance YesodAuth App where
 
           if isApiRoute
             then do
-              tokenAuth <- case mToken of
-                  Nothing -> return Nothing
-                  Just token -> do
-                      mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
-                      return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
               defaultAuth <- defaultMaybeAuthId
 
+              mToken <- lookupGetParam "access_token"
+              tokenAuth <-
+                  maybe
+                  (return Nothing)
+                  (\token -> do
+                      mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
+                      return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
+                  )
+                  mToken
+
               -- Determine if Basic auth was used and is valid.
-              basicAuth <- lookupBasicAuth
-              baseAuth <-
+              basicAuthValues <- lookupBasicAuth
+              basicAuth <-
                   maybe
                   (return Nothing)
                   (\(userFromHeader, passwordFromHeader) -> do
@@ -305,10 +309,10 @@ instance YesodAuth App where
                             )
                             mUser
                   )
-                  basicAuth
+                  basicAuthValues
 
 
-              return $ case catMaybes [defaultAuth, tokenAuth, baseAuth] of
+              return $ case catMaybes [defaultAuth, tokenAuth, basicAuth] of
                   [] -> Nothing
                   (x : _) -> Just x
             else
