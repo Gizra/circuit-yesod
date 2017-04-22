@@ -23,6 +23,7 @@ library
                      Handler.Bid
                      Handler.Common
                      Handler.Home
+                     Handler.LoginToken
                      Handler.RestfulItem
                      Handler.RestfulItems
                      Handler.Profile
@@ -101,8 +102,10 @@ library
                  , case-insensitive
                  , wai
 
+                 , blaze-html
                  , esqueleto
                  , foreign-store
+                 , mime-mail
                  , random-strings
                  , resource-pool
 

@@ -1,6 +1,8 @@
 User
     ident Text
     password Text Maybe
+    verkey Text Maybe -- Used for resetting passwords
+    verified Bool
     UniqueUser ident
     deriving Typeable
 Sale
@@ -30,7 +32,7 @@ Bid
     user            UserId Maybe
     deriving        Eq Show Generic
 
-AccessToken
+AccessToken json
     created UTCTime
     userId UserId
     token Text

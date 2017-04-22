@@ -8,3 +8,6 @@
 
       <div>
         <a href="@{RegenerateAccessTokenR uid}">Regenerate access token
+
+      <div>
+        <a href="@{LoginTokenR}">Login token

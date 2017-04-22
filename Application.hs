@@ -42,6 +42,7 @@ import Handler.SseReceive
 import Handler.RegenerateAccessToken
 import Handler.RestfulItems
 import Handler.RestfulItem
+import Handler.LoginToken
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
@@ -159,6 +160,8 @@ migrateData pool = do
                 createUser name = User
                         { userIdent = name
                         , userPassword = Nothing
+                        , userVerkey = Nothing
+                        , userVerified = True
                         }
 
 
