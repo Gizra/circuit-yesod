@@ -288,22 +288,25 @@ instance YesodAuth App where
               -- Determine if Basic auth was used and is valid.
               basicAuth <- lookupBasicAuth
               baseAuth <-
-                  case basicAuth of
-                    Nothing -> return Nothing
-                    Just (userFromHeader, passwordFromHeader) -> do
-                          mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
-                          return $
-                              maybe
-                              Nothing
-                              (\user ->
-                                let
-                                    saltedPass = fromMaybe "" (userPassword $ entityVal user)
-                                in
-                                    if (isValidPass passwordFromHeader saltedPass)
-                                      then Just $ entityKey user
-                                      else Nothing
-                              )
-                              mUser
+                  maybe
+                  (return Nothing)
+                  (\(userFromHeader, passwordFromHeader) -> do
+                        mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
+                        return $
+                            maybe
+                            Nothing
+                            (\user ->
+                              let
+                                  saltedPass = fromMaybe "" (userPassword $ entityVal user)
+                              in
+                                  if (isValidPass passwordFromHeader saltedPass)
+                                    then Just $ entityKey user
+                                    else Nothing
+                            )
+                            mUser
+                  )
+                  basicAuth
+
 
               return $ case catMaybes [defaultAuth, tokenAuth, baseAuth] of
                   [] -> Nothing
