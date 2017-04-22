@@ -276,10 +276,6 @@ instance YesodAuth App where
                 )
                 mCurrentRoute
 
-          basicAuth <- lookupBasicAuth
-
-          let (userFromHeader, passwordFromHeader)= fromMaybe ("", "") basicAuth
-
           if isApiRoute
             then do
               tokenAuth <- case mToken of
@@ -290,9 +286,11 @@ instance YesodAuth App where
               defaultAuth <- defaultMaybeAuthId
 
               -- Determine if Basic auth was used and is valid.
+              basicAuth <- lookupBasicAuth
               baseAuth <-
-                  if (not (TX.null userFromHeader) && not (TX.null passwordFromHeader))
-                      then do
+                  case basicAuth of
+                    Nothing -> return Nothing
+                    Just (userFromHeader, passwordFromHeader) -> do
                           mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
                           return $
                               maybe
@@ -306,8 +304,6 @@ instance YesodAuth App where
                                       else Nothing
                               )
                               mUser
-                  else
-                      return Nothing
 
               return $ case catMaybes [defaultAuth, tokenAuth, baseAuth] of
                   [] -> Nothing
