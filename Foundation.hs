@@ -334,7 +334,10 @@ instance YesodAuthEmail App where
     sendVerifyEmail email _ verurl = do
         -- Print out to the console the verification email, for easier
         -- debugging.
-        liftIO $ putStrLn $ "Copy/ Paste this URL in your browser:" ++ verurl
+        master <- getYesod
+        _ <- if (appDevelopment $ appSettings master)
+             then liftIO $ putStrLn $ "Copy/ Paste this URL in your browser: " ++ verurl
+             else return ()
 
         -- Send email.
         liftIO $ renderSendMail (emptyMail $ Address Nothing "noreply")
