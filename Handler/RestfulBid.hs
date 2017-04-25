@@ -4,29 +4,16 @@ import qualified Data.HashMap.Strict   as HM (insert)
 import           Import
 import           Model.Types           (BidType (BidTypeLive))
 import           Utils.Bid
+import           Utils.Restful
 import           Utils.ServerSentEvent
 
-
-
--- @todo: Use [(ParamName, ParamValue)] instead of String from Yesod.Request
-addMetaData :: (Route App -> [(Text, Text)] -> Text)
-            -> [(Text, Text)]
-            -> BidId
-            -> Bid
-            -> Maybe (HashMap Text Value)
-addMetaData urlRenderParams params bidId bid =
-    case toJSON (Entity bidId bid) of
-        Object obj -> Just $ HM.insert "self" self obj
-        _          -> Nothing
-
-    where self = String $ urlRenderParams (RestfulBidR bidId) params
 
 getRestfulBidR :: BidId -> Handler Value
 getRestfulBidR bidId = do
     bid <- runDB $ get404 bidId
-    urlRenderParams <- getUrlRenderParams
-    params <- reqGetParams <$> getRequest
-    let bidWithMetaData = addMetaData urlRenderParams params bidId bid
+    urlRender <- getUrlRender
+
+    let bidWithMetaData = addEntityMetaData urlRender RestfulBidR bidId bid
 
     muid <- maybeAuthId
     let bidWithSanitizedProperties = sanitiziePrivateProperties muid bid bidWithMetaData

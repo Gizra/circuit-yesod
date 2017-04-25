@@ -2,17 +2,26 @@ module Foundation where
 
 import Import.NoFoundation
 import qualified Data.CaseInsensitive as CI
+import qualified Data.Text as TX
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import qualified Data.Text.Encoding as TE
 import Network.Wai.EventSource
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.Dummy
+import Yesod.Auth.Email
 -- ^ Used only when in development mode.
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import Utils.AccessToken
+
+
+import           Text.Blaze.Html.Renderer.Utf8 (renderHtml)
+import qualified Data.Text.Lazy.Encoding
+import           Text.Shakespeare.Text    (stext)
+import           Network.Mail.Mime
+
 
 
 -- | The foundation datatype for your application. This can be a good place to
@@ -112,7 +121,7 @@ instance Yesod App where
                     , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
-                    { menuItemLabel = "Dummy Login"
+                    { menuItemLabel = "Login"
                     , menuItemRoute = AuthR LoginR
                     , menuItemAccessCallback = (appDevelopment $ appSettings master) && isNothing muser
                     }
@@ -154,20 +163,20 @@ instance Yesod App where
     isAuthorized SseReceiveR _ = return Authorized
 
     isAuthorized (AuthR LogoutR) _ = isAuthenticated
-    isAuthorized (AuthR _) _ = do
-        mu <- maybeAuthId
-        return $ case mu of
-            Nothing -> Authorized
-            Just _ -> Unauthorized "As a logged in user, you cannot re-login. You must Logout first."
+    isAuthorized (AuthR _) _ = return Authorized
 
     isAuthorized (BidR _) _ = isAuthenticated
     isAuthorized CreateBidR _ = isAuthenticated
     isAuthorized (EditBidR _) _ = isAuthenticated
     isAuthorized HomeR _ = isAuthenticated
     isAuthorized ProfileR _ = isAuthenticated
+    isAuthorized LoginTokenR _ = isAuthenticated
     isAuthorized (RegenerateAccessTokenR _) _ = isAuthenticated
     isAuthorized (RestfulBidR _) _ = isAuthenticated
     isAuthorized RestfulBidsR _ = isAuthenticated
+
+    isAuthorized (RestfulItemR _ _) _ = isAuthenticated
+    isAuthorized (RestfulItemsR _) _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -233,6 +242,8 @@ instance YesodAuth App where
               uid <- insert User
                 { userIdent = credsIdent creds
                 , userPassword = Nothing
+                , userVerkey = Nothing
+                , userVerified = True
                 }
 
               -- Create access token for the new user.
@@ -242,24 +253,155 @@ instance YesodAuth App where
               _ <- insert $ AccessToken currentTime uid accessTokenText
               return $ Authenticated uid
 
-    authPlugins app = [] ++ extraAuthPlugins
+    authPlugins app = [ authEmail ] ++ extraAuthPlugins
         -- Enable authDummy login when in development mode.
         where extraAuthPlugins = [authDummy | appDevelopment $ appSettings app]
 
     -- Try to authenticate with the access token.
     maybeAuthId = do
-          mToken <- lookupGetParam "access_token"
-          tokenAuth <- case mToken of
-              Nothing -> return Nothing
-              Just token -> do
-                  mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
-                  return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
-          defaultAuth <- defaultMaybeAuthId
-          return $ case catMaybes [defaultAuth, tokenAuth] of
-              [] -> Nothing
-              (x : _) -> Just x
+          urlRender <- getUrlRender
+          let baseUrl = urlRender HomeR
+
+          mCurrentRoute <- getCurrentRoute
+          -- Determine if route is prefixed with "/api"
+          let isApiRoute = maybe
+                False
+                (\currentRoute ->
+                    let
+                      -- Strip the base URL.
+                      route = TX.drop (length baseUrl) (urlRender currentRoute)
+                    in
+                      isPrefixOf "api/" route
+                )
+                mCurrentRoute
+
+          if isApiRoute
+            then do
+              defaultAuth <- defaultMaybeAuthId
+
+              mToken <- lookupGetParam "access_token"
+              tokenAuth <-
+                  maybe
+                  (return Nothing)
+                  (\token -> do
+                      mTokenId <- runDB $ selectFirst [AccessTokenToken ==. token] []
+                      return $ fmap (\tokenId -> accessTokenUserId $ entityVal tokenId) mTokenId
+                  )
+                  mToken
+
+              -- Determine if Basic auth was used and is valid.
+              basicAuthValues <- lookupBasicAuth
+              basicAuth <-
+                  maybe
+                  (return Nothing)
+                  (\(userFromHeader, passwordFromHeader) -> do
+                        mUser <- runDB $ selectFirst [UserIdent ==. userFromHeader] []
+                        return $
+                            maybe
+                            Nothing
+                            (\user ->
+                              let
+                                  saltedPass = fromMaybe "" (userPassword $ entityVal user)
+                              in
+                                  if (isValidPass passwordFromHeader saltedPass)
+                                    then Just $ entityKey user
+                                    else Nothing
+                            )
+                            mUser
+                  )
+                  basicAuthValues
+
+
+              return $ case catMaybes [defaultAuth, tokenAuth, basicAuth] of
+                  [] -> Nothing
+                  (x : _) -> Just x
+            else
+              -- Fallback to the default authentication.
+              defaultMaybeAuthId
+
 
     authHttpManager = getHttpManager
+
+
+instance YesodAuthEmail App where
+    type AuthEmailId App = UserId
+
+    afterPasswordRoute _ = HomeR
+
+    addUnverified email verkey =
+        runDB $ insert $ User email Nothing (Just verkey) False
+
+    sendVerifyEmail email _ verurl = do
+        -- Print out to the console the verification email, for easier
+        -- debugging.
+        master <- getYesod
+        _ <- if (appDevelopment $ appSettings master)
+             then liftIO $ putStrLn $ "Copy/ Paste this URL in your browser: " ++ verurl
+             else return ()
+
+        -- Send email.
+        liftIO $ renderSendMail (emptyMail $ Address Nothing "noreply")
+            { mailTo = [Address Nothing email]
+            , mailHeaders =
+                [ ("Subject", "Verify your email address")
+                ]
+            , mailParts = [[textPart, htmlPart]]
+            }
+      where
+        textPart = Part
+            { partType = "text/plain; charset=utf-8"
+            , partEncoding = None
+            , partFilename = Nothing
+            , partContent = Data.Text.Lazy.Encoding.encodeUtf8
+                [stext|
+                    Please confirm your email address by clicking on the link below.
+
+                    #{verurl}
+
+                    Thank you
+                |]
+            , partHeaders = []
+            }
+        htmlPart = Part
+            { partType = "text/html; charset=utf-8"
+            , partEncoding = None
+            , partFilename = Nothing
+            , partContent = renderHtml
+                [shamlet|
+                    <p>Please confirm your email address by clicking on the link below.
+                    <p>
+                        <a href=#{verurl}>#{verurl}
+                    <p>Thank you
+                |]
+            , partHeaders = []
+            }
+    getVerifyKey = runDB . fmap (join . fmap userVerkey) . get
+    setVerifyKey uid key = runDB $ update uid [UserVerkey =. Just key]
+    verifyAccount uid = runDB $ do
+        mu <- get uid
+        case mu of
+            Nothing -> return Nothing
+            Just u -> do
+                -- Create access token for the new user.
+                accessTokenText <- generateToken
+                currentTime <- liftIO getCurrentTime
+                _ <- insert $ AccessToken currentTime uid accessTokenText
+
+                return $ Just uid
+    getPassword = runDB . fmap (join . fmap userPassword) . get
+    setPassword uid pass = runDB $ update uid [UserPassword =. Just pass]
+    getEmailCreds email = runDB $ do
+        mu <- getBy $ UniqueUser email
+        case mu of
+            Nothing -> return Nothing
+            Just (Entity uid u) -> return $ Just EmailCreds
+                { emailCredsId = uid
+                , emailCredsAuthId = Just uid
+                , emailCredsStatus = isJust $ userPassword u
+                , emailCredsVerkey = userVerkey u
+                , emailCredsEmail = email
+                }
+    getEmail = runDB . fmap (fmap userIdent) . get
 
 -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
