@@ -23,13 +23,17 @@ library
                      Handler.Bid
                      Handler.Common
                      Handler.Home
+                     Handler.LoginToken
+                     Handler.RestfulItem
+                     Handler.RestfulItems
                      Handler.Profile
                      Handler.RegenerateAccessToken
                      Handler.RestfulBid
                      Handler.SseReceive
                      Model.Types
-                     Utils.Bid
                      Utils.AccessToken
+                     Utils.Bid
+                     Utils.Restful
                      Utils.ServerSentEvent
 
     if flag(dev) || flag(library-only)
@@ -98,8 +102,10 @@ library
                  , case-insensitive
                  , wai
 
+                 , blaze-html
                  , esqueleto
                  , foreign-store
+                 , mime-mail
                  , random-strings
                  , resource-pool
 
@@ -122,6 +128,8 @@ test-suite test
                        Handler.HomeSpec
                        Handler.ProfileSpec
                        Handler.RestfulBidSpec
+                       Handler.RestfulItemSpec
+                       Handler.RestfulItemsSpec
                        Handler.RegenerateAccessTokenSpec
                        TestImport
     hs-source-dirs:    test

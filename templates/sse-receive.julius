@@ -3,7 +3,7 @@ var src = new EventSource("@{SseReceiveR}");
 
 src.addEventListener('#{toJSON BidCreate}', function(msg) {
     var data = JSON.parse(msg.data);
-    toastr.success('Bid ID ' + data.id + ' creatd by bidder ID ' + data.bidder);
+    toastr.success('Bid ID ' + data.id + ' created by bidder ID ' + data.bidder);
 
     $('.bids-wrapper').load("@{HomeR}" + ' .bids-wrapper > *');
 });
