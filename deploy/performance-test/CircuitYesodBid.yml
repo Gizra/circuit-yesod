@@ -1,0 +1,38 @@
+execution:
+- concurrency: 1
+  scenario: CircuitBidLogged
+  
+scenarios:
+  CircuitBidLogged:
+    default-address: http://127.0.0.1
+    requests:
+      - url: auth/login
+        method: GET
+        label: loginpage
+        extract-regexp:
+          form_token: <input name="_token" value="(\w+)" type="hidden">
+      - url: auth/page/dummy
+        method: POST
+        body:
+          ident: bidder
+          _token: ${form_token}
+      - foreach: amount in [10, 20, 50, 100, 1000, 50000, 5000000]
+        do:
+          - url: add/bid
+            method: POST
+            body:
+              _token: ${form_token}
+              f1: 2
+              f2: 1
+              f3: ${amount}
+              f4: 1
+
+reporting:
+- module: final-stats
+- module: console
+
+settings:
+  check-interval: 1s
+  default-executor: jmeter
+
+provisioning: local
