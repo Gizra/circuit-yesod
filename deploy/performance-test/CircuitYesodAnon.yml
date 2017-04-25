@@ -4,9 +4,10 @@ execution:
   
 scenarios:
   CircuitBidAnon:
+    default-address: http://127.0.0.1
     retrieve-resources: true
     requests:
-      - http://172.104.150.92/auth/login
+      - auth/login
 
 reporting:
 - module: final-stats
