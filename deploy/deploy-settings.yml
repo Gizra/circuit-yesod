@@ -24,13 +24,13 @@ development: true
 # See https://github.com/yesodweb/yesod/wiki/Configuration#parsing-numeric-values-as-strings
 
 database:
-  user:     "_env:PGUSER:root"
-  password: "_env:PGPASS:root"
-  host:     "_env:PGHOST:db"
+  user:     "_env:PGUSER:postgres"
+  password: "_env:PGPASS:<TO BE EDITED>"
+  host:     "_env:PGHOST:<TO BE EDITED>"
   port:     "_env:PGPORT:5432"
   # See config/test-settings.yml for an override during tests
   database: "_env:PGDATABASE:circuit"
   poolsize: "_env:PGPOOLSIZE:10"
 
-copyright: Insert copyright statement here
+copyright: 1.1 on GKE
 #analytics: UA-YOURCODE

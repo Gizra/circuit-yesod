@@ -32,7 +32,7 @@ services:
     circuit_2:
       image: circuit
       ports:
-        - 3002:300
+        - 3002:3000
 
 volumes:
     db-volume:
