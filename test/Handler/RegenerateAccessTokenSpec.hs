@@ -36,3 +36,41 @@ spec = withApp $ do
 
                       assertEq "Access token has changed" (mToken /= mTokenAfterChange) True
                   ) mUser
+
+        it "should user to access own regenerate access token page" $ do
+            userEntity <- createUser "alice"
+            let (Entity uid _) = userEntity
+            authenticateAs userEntity
+
+            get $ RegenerateAccessTokenR uid
+            statusIs 200
+
+        it "should not allow user to access another user's regenerate access token page" $ do
+            userEntity <- createUser "alice"
+            let (Entity uid _) = userEntity
+            authenticateAs userEntity
+
+            anotherUserEntity <- createUser "john"
+            authenticateAs anotherUserEntity
+
+            get $ RegenerateAccessTokenR uid
+            statusIs 403
+
+
+        it "should allow admin to access regenerate access token page on behalf of another user" $ do
+          -- Create "admin" role
+          roleId <- runDB . insert $ Role "admin"
+
+          -- Create users
+          userEntity <- createUser "alice"
+          let (Entity uid _) = userEntity
+
+          adminUserEntity <- createUser "john"
+          let (Entity adminUid _) = adminUserEntity
+
+          -- Make user an admin.
+          _ <- runDB . insert $ UserRole roleId adminUid
+          authenticateAs adminUserEntity
+
+          get $ RegenerateAccessTokenR uid
+          statusIs 200

@@ -171,7 +171,7 @@ instance Yesod App where
     isAuthorized HomeR _ = isAuthenticated
     isAuthorized ProfileR _ = isAuthenticated
     isAuthorized LoginTokenR _ = isAuthenticated
-    isAuthorized (RegenerateAccessTokenR _) _ = isAuthenticated
+    isAuthorized (RegenerateAccessTokenR uid) _ = isOwnerOrAdmin uid
     isAuthorized (RestfulBidR _) _ = isAuthenticated
     isAuthorized RestfulBidsR _ = isAuthenticated
 
@@ -410,6 +410,36 @@ isAuthenticated = do
     return $ case muid of
         Nothing -> Unauthorized "You must login to access this page"
         Just _ -> Authorized
+
+-- | Access function to determine if a user has admin role.
+isAdmin :: Handler AuthResult
+isAdmin = do
+    muid <- maybeAuthId
+    case muid of
+        Nothing -> return $ Unauthorized "You must login to access this page"
+        Just uid -> do
+          -- Check if user has the "admin" role.
+          mRole <- runDB $ selectFirst [RoleName ==. "admin"] []
+          case mRole of
+            Nothing -> return $ Unauthorized "admin role does not defined in the site"
+            Just role -> do
+                mUserRole <- runDB $ selectFirst [UserRoleUser ==. uid, UserRoleRole ==. (entityKey role)] []
+                return $ case mUserRole of
+                  Nothing -> Unauthorized "You must be an admin to access this page"
+                  Just _ -> Authorized
+
+isOwnerOrAdmin :: Key User -> Handler AuthResult
+isOwnerOrAdmin uid = do
+  mCurrentUid <- maybeAuthId
+  case mCurrentUid of
+      Nothing -> return $ Unauthorized "You must login to access this page"
+      Just currentUid ->
+          if (currentUid == uid)
+              then
+                  return Authorized
+              else
+                  isAdmin
+
 
 instance YesodAuthPersist App
 

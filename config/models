@@ -5,6 +5,15 @@ User
     verified Bool
     UniqueUser ident
     deriving Typeable
+Role
+    name            Text
+    UniqueName      name
+    deriving        Show Generic
+UserRole
+    role            RoleId
+    user            UserId
+    UniqueRoleUser  role user
+    deriving        Show Generic
 Sale
     name            Text
     status          SaleStatus
