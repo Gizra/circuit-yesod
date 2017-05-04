@@ -428,6 +428,7 @@ isAdmin = do
                   Nothing -> Unauthorized "You must be an admin to access this page"
                   Just _ -> Authorized
 
+-- | Access function to determine if a current user is the owner or has admin role.
 isOwnerOrAdmin :: Key User -> Handler AuthResult
 isOwnerOrAdmin uid = do
   mCurrentUid <- maybeAuthId
