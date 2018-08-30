@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Models.Bid where
 
+import Data.Aeson.Types
+import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import.NoFoundation
 import Types (BidDelete(..), BidType)
@@ -30,8 +33,20 @@ data Bid = Bid
   , bidCreated :: UTCTime
   } deriving (Show, Generic)
 
-mkBid :: BidDb -> Either Text Bid
-mkBid bidDb =
+data BidEntity =
+  BidEntity BidId
+            Bid
+  deriving (Show, Generic)
+
+instance ToJSON BidEntity where
+  toJSON (BidEntity bidId bid) =
+    object ["id" .= fromSqlKey bidId, "amount" .= bidAmount bid]
+
+instance ToJSON Amount where
+  toJSON (Amount amount) = toJSON amount
+
+mkBid :: (BidId, BidDb) -> Either Text BidEntity
+mkBid (bidId, bidDb) =
   let eitherBidDeleted =
         case (bidDbDeletedReason bidDb, bidDbDeletedAuthor bidDb) of
           (Nothing, Nothing) -> Right NotDeleted
@@ -44,7 +59,9 @@ mkBid bidDb =
   in case eitherBidDeleted of
        Left err -> Left err
        Right bidDeleted_ ->
-         Right
+         Right $
+         BidEntity
+           bidId
            Bid
            { bidItemId = bidDbItemId bidDb
            , bidType = bidDbType_ bidDb

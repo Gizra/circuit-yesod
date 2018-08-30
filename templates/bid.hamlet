@@ -5,3 +5,6 @@
 
     <p>
       Bid: <strong><span class="username">#{show bid}</span></strong>
+
+    <p>
+      RESTful : #{show encodedBid}
