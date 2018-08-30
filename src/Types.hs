@@ -7,6 +7,16 @@ import Database.Persist.TH
 import GHC.Generics
 import Prelude
 
+data SaleStatus
+  = SaleStatusNotStarted
+  | SaleStatusPreLive
+  | SaleStatusLive
+  | SalesStatusLiveEnded
+  | SaleStatusClosed
+  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+
+derivePersistField "SaleStatus"
+
 data MailType
   = MailTypeObscured
   | MailTypeRegular
@@ -14,10 +24,31 @@ data MailType
 
 derivePersistField "MailType"
 
-data SaleStatus
-  = SaleStatusClosed
-  | SaleStatusPaused
-  | SaleStatusActive
+data ItemStatus
+  = ItemStatusPending
+  | ItemStatusActive
+  | ItemStatusGoing
+  | ItemStatusSold
+  | ItemStatusUnsold
   deriving (Show, Eq, Enum, Bounded, Read, Generic)
 
-derivePersistField "SaleStatus"
+derivePersistField "ItemStatus"
+
+data BidType
+  = BidTypeMail
+  | BidTypeAgent
+  | BidTypeAutoMail
+  | BidTypeAutoAgent
+  | BidTypeLive
+  | BidTypePostLive
+  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+
+derivePersistField "BidType"
+
+data BidDelete
+  = BidDeleteByStaff
+  | BidDeleteChangedToFloor
+  | BidDeleteSuspendedDueToGroup
+  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+
+derivePersistField "BidDelete"

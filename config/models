@@ -10,6 +10,7 @@ Site
 Sale
     name Text
     uuid Text
+    status SaleStatus
     activeSession SessionId Maybe
     mailType MailType
     UniqueSaleUuid uuid
@@ -24,6 +25,7 @@ Session
 Item
     lot Text
     uuid Text
+    status ItemStatus
     openingPrice Int
     UniqueItemUuid uuid
     deriving Show
@@ -34,6 +36,17 @@ BidderInfoDb -- We add the `Db` suffix, as we'll re construct it later on to a `
     bidderMax Int
     liveCredit Int
     totalSpent Int
+    deriving Show
+BidDb -- We add the `Db` suffix, as we'll re construct it later on to a `Bid`
+    itemId ItemId
+    type_ BidType
+    amount Int
+    author UserId -- We authored the Bid. The bidder itself, or a staff member.
+    bidderNumber Int Maybe
+    isDeleted Bool
+    deletedAuthor UserId Maybe -- If the Bid is deleted, we mark the deleting author, in case it was done by staff
+    deleteReason BidDelete Maybe
+    created UTCTime
     deriving Show
 User
     ident Text
