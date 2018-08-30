@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Models.Bid where
 
 import Import
@@ -33,19 +35,21 @@ data Bid = Bid
   , bidCreated :: UTCTime
   }
 
-mkBid :: BidDb -> Maybe Bid
+mkBid :: BidDb -> Either Text Bid
 mkBid bidDb =
-  let maybeBidDeleted =
+  let eitherBidDeleted =
         case (bidDbDeletedReason bidDb, bidDbDeletedAuthor bidDb) of
-          (Nothing, _) -> Just NotDeleted
-          (Just BidDeleteByStaff, Just userId) -> Just $ DeletedByStaff userId
+          (Nothing, Nothing) -> Right NotDeleted
+          (Nothing, Just _) ->
+            Left "Bid has no deleted reason, but has a deleted author."
+          (Just BidDeleteByStaff, Just userId) -> Right $ DeletedByStaff userId
           (Just BidDeleteChangedToFloor, Just userId) ->
-            Just $ ChangedToFloor userId
-          _ -> Nothing
-  in case maybeBidDeleted of
-       Nothing -> Nothing
-       Just bidDeleted ->
-         Just
+            Right $ ChangedToFloor userId
+          _ -> Left "Invalid Bid delete state"
+  in case eitherBidDeleted of
+       Left error -> Left error
+       Right bidDeleted ->
+         Right
            Bid
            { bidItemId = bidDbItemId bidDb
            , bidType = bidDbType_ bidDb
