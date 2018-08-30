@@ -8,7 +8,7 @@ import Data.Aeson.Types
 import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import.NoFoundation
-import Types (BidDelete(..), BidType)
+import Types (BidType)
 
 type BidId = BidDbId
 
@@ -24,11 +24,13 @@ data BidDeleted
   -- | SuspendedDueToGroup BidDbId -- We mark the Bid Id of the group, that caused this to be suspended.
   deriving (Show, Generic)
 
+type UserUuid = Text
+
 data Bid = Bid
   { bidItemId :: ItemId
   , bidType :: BidType
   , bidAmount :: Amount
-  , bidAuthor :: UserId
+  , bidAuthor :: (UserId, UserUuid)
   , bidDeleted :: BidDeleted
   , bidCreated :: UTCTime
   } deriving (Show, Generic)
@@ -56,34 +58,8 @@ instance ToJSON BidEntityWithViewAccess where
           case bidViewAccess of
             NonPrivileged -> []
             Author -> []
-            Privileged -> ["type" .= show (bidType bid)]
+            Privileged -> ["author_uuid" .= snd (bidAuthor bid)]
     in object $ jsonDefault <> jsonPerViewAccess
 
 instance ToJSON Amount where
   toJSON (Amount amount) = toJSON amount
-
-mkBid :: (BidId, BidDb) -> Either Text BidEntity
-mkBid (bidId, bidDb) =
-  let eitherBidDeleted =
-        case (bidDbDeletedReason bidDb, bidDbDeletedAuthor bidDb) of
-          (Nothing, Nothing) -> Right NotDeleted
-          (Nothing, Just _) ->
-            Left "Bid has no deleted reason, but has a deleted author."
-          (Just BidDeleteByStaff, Just userId) -> Right $ DeletedByStaff userId
-          (Just BidDeleteChangedToFloor, Just userId) ->
-            Right $ ChangedToFloor userId
-          _ -> Left "Invalid Bid delete state"
-  in case eitherBidDeleted of
-       Left err -> Left err
-       Right bidDeleted_ ->
-         Right $
-         BidEntity
-           bidId
-           Bid
-           { bidItemId = bidDbItemId bidDb
-           , bidType = bidDbType_ bidDb
-           , bidAmount = Amount $ bidDbAmount bidDb
-           , bidAuthor = bidDbAuthor bidDb
-           , bidDeleted = bidDeleted_
-           , bidCreated = bidDbCreated bidDb
-           }

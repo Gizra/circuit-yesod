@@ -250,7 +250,12 @@ instance YesodAuth App where
         Just (Entity uid _) -> return $ Authenticated uid
         Nothing ->
           Authenticated <$>
-          insert User {userIdent = credsIdent creds, userPassword = Nothing}
+          insert
+            User
+            { userIdent = credsIdent creds
+            , userPassword = Nothing
+            , userUuid = credsIdent creds <> "-uuid"
+            }
     -- You can add other plugins like Google Email, email or OAuth here
   authPlugins :: App -> [AuthPlugin App]
   authPlugins app = [authOpenId Claimed []] ++ extraAuthPlugins

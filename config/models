@@ -52,7 +52,9 @@ BidDb -- We add the `Db` suffix, as we'll re construct it later on to a `Bid`
 User
     ident Text
     password Text Maybe
+    uuid Text
     UniqueUser ident
+    UniqueUserUuid uuid
     deriving Typeable
 Email
     email Text
