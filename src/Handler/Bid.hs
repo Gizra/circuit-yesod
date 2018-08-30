@@ -12,6 +12,7 @@ import Import
 
 -- @todo: Avoid this import
 import Models.Bid
+       (BidEntityWithViewAccess(..), BidId, BidViewAccess(..), mkBid)
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do
@@ -19,7 +20,12 @@ getBidR bidId = do
   case mkBid (bidId, bidDb) of
     Left err -> invalidArgs [err]
     Right bid ->
-      let encodedBid = encodeToLazyText $ toJSON bid
+      let encodedBidPrivileged =
+            encodeToLazyText $
+            toJSON (BidEntityWithViewAccess bid Models.Bid.Privileged)
+          encodedBidNonPrivileged =
+            encodeToLazyText $
+            toJSON (BidEntityWithViewAccess bid Models.Bid.NonPrivileged)
       in defaultLayout $ do
            setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
            $(widgetFile "bid")

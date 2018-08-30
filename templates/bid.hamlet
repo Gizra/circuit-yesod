@@ -7,4 +7,7 @@
       Bid: <strong><span class="username">#{show bid}</span></strong>
 
     <p>
-      RESTful : #{show encodedBid}
+      RESTful Privileged : #{show encodedBidPrivileged}
+
+    <p>
+      RESTful Non-Privileged : #{show encodedBidNonPrivileged}      

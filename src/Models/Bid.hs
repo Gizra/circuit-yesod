@@ -33,14 +33,31 @@ data Bid = Bid
   , bidCreated :: UTCTime
   } deriving (Show, Generic)
 
+data BidViewAccess
+  = NonPrivileged
+  | Author
+  | Privileged
+  deriving (Show, Generic)
+
 data BidEntity =
   BidEntity BidId
             Bid
   deriving (Show, Generic)
 
-instance ToJSON BidEntity where
-  toJSON (BidEntity bidId bid) =
-    object ["id" .= fromSqlKey bidId, "amount" .= bidAmount bid]
+data BidEntityWithViewAccess =
+  BidEntityWithViewAccess BidEntity
+                          BidViewAccess
+  deriving (Show, Generic)
+
+instance ToJSON BidEntityWithViewAccess where
+  toJSON (BidEntityWithViewAccess (BidEntity bidId bid) bidViewAccess) =
+    let jsonDefault = ["id" .= fromSqlKey bidId, "amount" .= bidAmount bid]
+        jsonPerViewAccess =
+          case bidViewAccess of
+            NonPrivileged -> []
+            Author -> []
+            Privileged -> ["type" .= show (bidType bid)]
+    in object $ jsonDefault <> jsonPerViewAccess
 
 instance ToJSON Amount where
   toJSON (Amount amount) = toJSON amount
