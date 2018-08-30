@@ -6,6 +6,6 @@ database:
   # something like:
   #
   #   database: "_env:PGDATABASE:circuit-yesod_test"
-  database: circuit-yesod_test
+  database: circuit_test
 
 auth-dummy-login: true
