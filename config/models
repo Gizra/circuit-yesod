@@ -43,9 +43,8 @@ BidDb -- We add the `Db` suffix, as we'll re construct it later on to a `Bid`
     amount Int
     author UserId -- We authored the Bid. The bidder itself, or a staff member.
     bidderNumber Int Maybe
-    isDeleted Bool
     deletedAuthor UserId Maybe -- If the Bid is deleted, we mark the deleting author, in case it was done by staff
-    deleteReason BidDelete Maybe
+    deletedReason BidDelete Maybe
     created UTCTime
     deriving Show
 User

@@ -48,7 +48,8 @@ derivePersistField "BidType"
 data BidDelete
   = BidDeleteByStaff
   | BidDeleteChangedToFloor
-  | BidDeleteSuspendedDueToGroup
+  -- @todo
+  -- | BidDeleteSuspendedDueToGroup
   deriving (Show, Eq, Enum, Bounded, Read, Generic)
 
 derivePersistField "BidDelete"
