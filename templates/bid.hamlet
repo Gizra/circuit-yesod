@@ -1,0 +1,7 @@
+<div .ui.container>
+
+    <h1>
+      Bid
+
+    <p>
+      Bid: <strong><span class="username">#{show bid}</span></strong>!
