@@ -10,9 +10,16 @@ Site
 Sale
     name Text
     uuid Text
-    activeSession SessionDb Maybe
+    activeSession SessionId Maybe
     mailType MailType
     UniqueSaleUuid uuid
+    deriving Show
+Session
+    name Text
+    saleId SaleId
+    firstItem ItemId
+    lastItem ItemId
+    activeItem ItemId
     deriving Show
 Item
     lot Text
@@ -27,12 +34,6 @@ BidderInfoDb -- We add the `Db` suffix, as we'll re construct it later on to a `
     bidderMax Int
     liveCredit Int
     totalSpent Int
-    deriving Show
-Session
-    saleId SaleId
-    firstLot ItemId
-    lastLot ItemId
-    activeLot ItemId
     deriving Show
 User
     ident Text
