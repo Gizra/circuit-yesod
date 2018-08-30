@@ -4,4 +4,4 @@
       Bid
 
     <p>
-      Bid: <strong><span class="username">#{show bid}</span></strong>!
+      Bid: <strong><span class="username">#{show bid}</span></strong>

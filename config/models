@@ -8,6 +8,7 @@ Site
     UniqueName name
     deriving Show
 Sale
+    siteId SiteId
     name Text
     uuid Text
     status SaleStatus
@@ -23,6 +24,7 @@ Session
     activeItem ItemId
     deriving Show
 Item
+    saleId SaleId
     lot Text
     uuid Text
     status ItemStatus
@@ -45,7 +47,7 @@ BidDb -- We add the `Db` suffix, as we'll re construct it later on to a `Bid`
     bidderNumber Int Maybe
     deletedAuthor UserId Maybe -- If the Bid is deleted, we mark the deleting author, in case it was done by staff
     deletedReason BidDelete Maybe
-    created UTCTime
+    created UTCTime default=now()
     deriving Show
 User
     ident Text
