@@ -5,10 +5,11 @@
 module Models.Bid where
 
 import Data.Aeson.Types
+import Data.Either
 import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import
-import Types (Amount(..), BidDelete(..), BidType)
+import Types (Amount(..), BidDelete(..), BidType(..))
 
 type BidId = BidDbId
 
@@ -27,6 +28,7 @@ data Bid = Bid
   , bidType :: BidType
   , bidAmount :: Amount
   , bidAuthor :: (UserId, UserUuid)
+  , bidBidderNumber :: Maybe Int
   , bidDeleted :: BidDeleted
   , bidCreated :: UTCTime
   } deriving (Show, Generic)
@@ -89,6 +91,69 @@ mkBid bidDb = do
         , bidType = bidDbType_ bidDb
         , bidAmount = Amount $ bidDbAmount bidDb
         , bidAuthor = (bidDbAuthor bidDb, userUuid author)
+        , bidBidderNumber = bidDbBidderNumber bidDb
         , bidDeleted = bidDeleted_
         , bidCreated = bidDbCreated bidDb
         }
+
+getDbValues :: Bid -> BidDb
+getDbValues bid =
+  let (Amount amount) = bidAmount bid
+      (deletedReason, deletedAuthor) =
+        case bidDeleted bid of
+          NotDeleted -> (Nothing, Nothing)
+          DeletedByStaff userId -> (Just BidDeleteByStaff, Just userId)
+          ChangedToFloor userId -> (Just BidDeleteChangedToFloor, Just userId)
+  in BidDb
+     { bidDbItemId = bidItemId bid
+     , bidDbType_ = bidType bid
+     , bidDbAmount = amount
+     , bidDbAuthor = fst (bidAuthor bid)
+     , bidDbBidderNumber = bidBidderNumber bid
+     , bidDbDeletedAuthor = deletedAuthor
+     , bidDbDeletedReason = deletedReason
+     , bidDbCreated = bidCreated bid
+     }
+
+-- Crud
+{-| We don't use Data.Either.Validation, as we want to break on the first failure.
+
+@todo: Break on first error. EitherT?
+-}
+save :: (Maybe BidId, Bid) -> Bool -> Handler (Either [Text] BidId)
+save (maybeBidId, bid) validate =
+  let bidDb = getDbValues bid
+      saveDo =
+        case maybeBidId of
+          Just bidId -> do
+            _ <- runDB $ replace bidId bidDb
+            return $ Right bidId
+          Nothing -> do
+            bidId <- runDB $ insert bidDb
+            return $ Right bidId
+  in if validate
+       then do
+         let validations = [positiveAmount bid]
+             lefts' = Data.Either.lefts validations
+         if not $ Import.null lefts'
+           then return $ Left lefts'
+           else saveDo
+       else saveDo
+
+-- Validations
+positiveAmount :: Bid -> Either Text ()
+positiveAmount bid =
+  let (Amount amount) = bidAmount bid
+      zeroAllowed =
+        case bidType bid of
+          BidTypeMail -> True
+          _ -> False
+  in if amount < 0
+       then Left $
+            pack
+              ("Bid amount must be a positive value, but it is " <> show amount)
+       else if amount == 0 && zeroAllowed
+              then Left $
+                   pack
+                     ("Bid amount must be above zero, but it is " <> show amount)
+              else Right ()
