@@ -7,6 +7,11 @@ import Database.Persist.TH
 import GHC.Generics
 import Prelude
 
+data Amount =
+  Amount Int
+  deriving (Show, Generic)
+
+-- @todo: Move to FieldTypes?
 data SaleStatus
   = SaleStatusNotStarted
   | SaleStatusPreLive

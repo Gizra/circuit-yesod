@@ -10,4 +10,4 @@
       RESTful Privileged : #{show encodedBidPrivileged}
 
     <p>
-      RESTful Non-Privileged : #{show encodedBidNonPrivileged}      
+      RESTful Non-Privileged : #{show encodedBidNonPrivileged}     

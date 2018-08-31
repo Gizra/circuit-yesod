@@ -1,0 +1,7 @@
+<div .ui.container>
+
+    <h1>
+      Item
+
+    <p>
+      Item: #{show item}

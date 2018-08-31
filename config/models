@@ -1,6 +1,9 @@
 -- By default this file is used by `persistFileWith` in Model.hs (which is imported by Foundation.hs)
 -- Syntax for this file here: https://github.com/yesodweb/persistent/blob/master/docs/Persistent-entity-syntax.md
 
+-- Note we add the `Db` suffix, as we'll upcast those to more type safe models.
+-- @todo: Add `Db` on all, along with `sql = ...`
+
 Site
     name Text
     backOfficeUrl Text
@@ -19,11 +22,11 @@ Sale
 Session
     name Text
     saleId SaleId
-    firstItem ItemId
-    lastItem ItemId
-    activeItem ItemId
+    firstItem ItemDbId
+    lastItem ItemDbId
+    activeItem ItemDbId
     deriving Show
-Item
+ItemDb sql=item
     saleId SaleId
     lot Text
     uuid Text
@@ -39,8 +42,8 @@ BidderInfoDb -- We add the `Db` suffix, as we'll re construct it later on to a `
     liveCredit Int
     totalSpent Int
     deriving Show
-BidDb -- We add the `Db` suffix, as we'll re construct it later on to a `Bid`
-    itemId ItemId
+BidDb
+    itemId ItemDbId
     type_ BidType
     amount Int
     author UserId -- We authored the Bid. The bidder itself, or a staff member.

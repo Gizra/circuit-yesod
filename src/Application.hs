@@ -43,6 +43,7 @@ import Handler.Bid
 import Handler.Comment
 import Handler.Common
 import Handler.Home
+import Handler.Item
 import Handler.Profile
 
 -- This line actually creates our YesodDispatch instance. It is the second half
