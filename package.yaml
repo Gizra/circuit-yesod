@@ -46,8 +46,8 @@ dependencies:
 - wai
 - foreign-store
 - blaze-html
+- yesod-lucid
 - lucid
-- monads-tf
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.

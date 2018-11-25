@@ -9,7 +9,7 @@ import Import
 
 import Lucid
 import Text.Blaze.Html
-import YesodLucid
+import Yesod.Lucid
 
 getProfileR :: Handler Import.Html
 getProfileR = do
@@ -18,7 +18,7 @@ getProfileR = do
     lucid $ \urlRender ->
       p_
         (do a_ [href_ (urlRender ProfileR)] (Lucid.toHtml $ userIdent user)
-            div_ "Some text")
+            div_ [] "Some text")
   defaultLayout $ do
     setTitle . Import.toHtml $ userIdent user <> "'s User page"
     toWidget . preEscapedToHtml . renderText $ lucidHtml
