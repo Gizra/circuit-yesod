@@ -11,9 +11,7 @@ import Database.Persist.Sql (fromSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid
-       (BidEntity(..), BidEntityWithViewAccess(..), BidId,
-        BidViewAccess(..), mkBid)
+import Models.Bid (BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid)
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do
@@ -22,13 +20,13 @@ getBidR bidId = do
   case eitherBid of
     Left err -> invalidArgs [err]
     Right bid ->
-      let bidEntity = BidEntity bidId bid
+      let bidTuple = (bidId, bid)
           encodedBidPrivileged =
             encodeToLazyText $
-            toJSON (BidEntityWithViewAccess bidEntity Models.Bid.Privileged)
+            toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
           encodedBidNonPrivileged =
             encodeToLazyText $
-            toJSON (BidEntityWithViewAccess bidEntity Models.Bid.NonPrivileged)
+            toJSON (BidEntityWithPrivileges bidTuple Models.Bid.NonPrivileged)
       in defaultLayout $ do
            setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
            $(widgetFile "bid")

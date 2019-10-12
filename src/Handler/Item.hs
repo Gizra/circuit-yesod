@@ -9,7 +9,7 @@ module Handler.Item where
 import Import
 
 -- @todo: Avoid this import
-import Models.Item (ItemEntity(..), mkItem)
+import Models.Item (mkItem)
 
 getItemR :: Text -> Handler Html
 getItemR itemUuid = do

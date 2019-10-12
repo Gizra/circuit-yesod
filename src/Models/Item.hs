@@ -21,10 +21,7 @@ data Item = Item
   { itemMailBids :: Map.Map BidId Bid
   } deriving (Show, Generic)
 
-data ItemEntity =
-  ItemEntity ItemId
-             Item
-  deriving (Show, Generic)
+
 
 mkItem :: (ItemDbId, ItemDb) -> Handler (Either Text Item)
 mkItem (itemDbId, itemDb) = do

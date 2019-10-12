@@ -1,7 +1,7 @@
 <div .ui.container>
 
     <h1>
-      Item
+        Item
 
     <p>
-      Item: #{show item}
+        Item: #{show item}
