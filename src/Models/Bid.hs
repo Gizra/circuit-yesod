@@ -24,7 +24,7 @@ data BidDeleted
 type UserUuid = Text
 
 data Bid = Bid
-  { bidItemId :: ItemDbId
+  { bidItemDbId :: ItemDbId
   , bidType :: BidType
   , bidAmount :: Amount
   , bidAuthor :: (UserId, UserUuid)
@@ -83,7 +83,7 @@ mkBid bidDb = do
       return $
       Right
         Bid
-        { bidItemId = bidDbItemId bidDb
+        { bidItemDbId = bidDbItemId bidDb
         , bidType = bidDbType_ bidDb
         , bidAmount = Amount $ bidDbAmount bidDb
         , bidAuthor = (bidDbAuthor bidDb, userUuid author)
@@ -101,7 +101,7 @@ getDbValues bid =
           DeletedByStaff userId -> (Just BidDeleteByStaff, Just userId)
           ChangedToFloor userId -> (Just BidDeleteChangedToFloor, Just userId)
   in BidDb
-     { bidDbItemId = bidItemId bid
+     { bidDbItemId = bidItemDbId bid
      , bidDbType_ = bidType bid
      , bidDbAmount = amount
      , bidDbAuthor = fst (bidAuthor bid)
@@ -110,6 +110,7 @@ getDbValues bid =
      , bidDbDeletedReason = deletedReason
      , bidDbCreated = bidCreated bid
      }
+
 
 -- Crud
 {-| We don't use Data.Either.Validation, as we want to break on the first failure.

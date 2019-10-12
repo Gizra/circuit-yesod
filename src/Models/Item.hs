@@ -18,7 +18,8 @@ import Models.Bid (Bid, BidId, mkBid)
 type ItemId = ItemDbId
 
 data Item = Item
-  { itemMailBids :: Map.Map BidId Bid
+  { itemUuid :: Text
+  , itemMailBids :: Map.Map BidId Bid
   } deriving (Show, Generic)
 
 
@@ -38,4 +39,10 @@ mkItem (itemDbId, itemDb) = do
              Right bid -> Map.insert bidId bid accum)
       Map.empty
       bidDbs
-  return $ Right Item {itemMailBids = bids}
+  return $ Right Item {
+    itemUuid = itemDbUuid itemDb
+    , itemMailBids = bids
+    }
+
+
+

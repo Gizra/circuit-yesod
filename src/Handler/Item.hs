@@ -19,6 +19,7 @@ getItemR itemUuid = do
   case eitherItem of
     Left err -> invalidArgs [err]
     Right item ->
+
       defaultLayout $ do
         setTitle . toHtml $ "Item #" <> itemUuid
         $(widgetFile "item")
