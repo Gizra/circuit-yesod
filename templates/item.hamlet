@@ -5,3 +5,12 @@
 
     <p>
         Item: #{show item}
+
+    $if null bidsList
+        <p>No Bids
+    $else
+        <ul>
+            $forall (bidId, bid) <- bidsList
+                <li>
+                    <a href="@{BidR bidId}">
+                        Bid ID #{show $ (fromSqlKey bidId)}

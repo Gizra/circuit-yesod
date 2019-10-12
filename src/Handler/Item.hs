@@ -7,9 +7,11 @@
 module Handler.Item where
 
 import Import
+import Database.Persist.Sql (fromSqlKey)
 
 -- @todo: Avoid this import
-import Models.Item (mkItem)
+import Models.Item (mkItem, Item(..))
+import qualified Data.Map.Strict as Map
 
 getItemR :: Text -> Handler Html
 getItemR itemUuid = do
@@ -19,7 +21,7 @@ getItemR itemUuid = do
   case eitherItem of
     Left err -> invalidArgs [err]
     Right item ->
-
-      defaultLayout $ do
+      let bidsList = Map.toList (itemMailBids item)
+      in defaultLayout $ do
         setTitle . toHtml $ "Item #" <> itemUuid
         $(widgetFile "item")
