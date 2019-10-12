@@ -9,8 +9,16 @@
     $if null bidsList
         <p>No Bids
     $else
-        <ul>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Bid ID
+                    <th>
+                        Bidder number
             $forall (bidId, bid) <- bidsList
-                <li>
-                    <a href="@{BidR bidId}">
-                        Bid ID #{show $ (fromSqlKey bidId)}
+                <tr>
+                    <td>
+                        <a href="@{BidR bidId}">##{show $ fromSqlKey bidId}
+                     <td>
+                        #{show $ bidBidderNumber bid}

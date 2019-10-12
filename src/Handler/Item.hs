@@ -10,12 +10,13 @@ import Import
 import Database.Persist.Sql (fromSqlKey)
 
 -- @todo: Avoid this import
+import Models.Bid (Bid(..))
 import Models.Item (mkItem, Item(..))
 import qualified Data.Map.Strict as Map
 
 getItemR :: Text -> Handler Html
-getItemR itemUuid = do
-  itemDb <- runDB $ getBy404 $ UniqueItemUuid itemUuid
+getItemR itemUuid_ = do
+  itemDb <- runDB $ getBy404 $ UniqueItemUuid itemUuid_
   let (Entity itemId itemDb_) = itemDb
   eitherItem <- mkItem (itemId, itemDb_)
   case eitherItem of
@@ -23,5 +24,5 @@ getItemR itemUuid = do
     Right item ->
       let bidsList = Map.toList (itemMailBids item)
       in defaultLayout $ do
-        setTitle . toHtml $ "Item #" <> itemUuid
+        setTitle . toHtml $ "Item #" <> itemUuid_
         $(widgetFile "item")
