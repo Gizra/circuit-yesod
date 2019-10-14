@@ -231,15 +231,17 @@ bidPostForm itemDbId = renderDivs $ BidViaForm
     <*> pure Nothing
 
 
+-- @todo: Move to helper to types?
+-- @todo: Fix type signature
 -- amountField :: (Functor m, Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m (Sum Int)
 amountField = convertField Amount getAmount intField
 
 
--- @todo: Move to types
+-- @todo: Move to helper to types?
+-- @todo: Fix type signature
 -- getAmount :: Amount => Int
 getAmount (Amount amount) =
   amount
-
 
 
 bidViaPostToBid :: BidViaForm -> Handler Bid
