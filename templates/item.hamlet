@@ -19,15 +19,20 @@
                     <th>
                         Bidder number
                     <th>
+                        Amount
+                    <th>
                         Debug
             $forall (bidId, bid) <- bidsList
                 <tr>
                     <td>
                         <a href="@{BidR bidId}">##{show $ fromSqlKey bidId}
-                     <td>
+                    <td>
                         #{show $ bidBidderNumber bid}
 
-                     <td>
+                    <td>
+                        #{getAmount $ bidAmount bid}
+
+                    <td>
                         #{show bid}
 
 

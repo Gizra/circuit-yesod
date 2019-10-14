@@ -1,0 +1,16 @@
+<div .ui.container>
+
+    <h2>
+        Bid via form
+
+    <p>
+        #{show bvf}
+
+    <h2> Bid
+
+    <p>
+        #{show bid}
+
+    <p>
+        <a href="@{ItemR $ itemUuid item}">
+            Go to Item
