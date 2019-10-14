@@ -13,8 +13,8 @@
 
 /profile ProfileR GET
 
-/bid/#ItemDbId BidPostR POST
--- Allow overlapping route, as the above one is just for POST
-!/bid/#BidDbId BidR GET
+/bid/#BidDbId BidR GET
+/bid-create/#ItemDbId BidPostR POST
+
 
 /item/#Text ItemR GET
