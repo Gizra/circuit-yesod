@@ -45,7 +45,7 @@ postBidPostR itemId = do
             maybeBidId <- Models.Bid.save (Nothing, bid) True
             case maybeBidId of
                 Left errors -> invalidArgs errors
-                Right bid ->
+                Right bidId ->
                     defaultLayout $ do
                         setTitle "Bid post"
                         $(widgetFile "bid-post")
