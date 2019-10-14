@@ -8,7 +8,7 @@
 module Handler.Bid where
 
 import Data.Aeson.Text (encodeToLazyText)
-import Database.Persist.Sql (fromSqlKey)
+import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Import
 
 -- @todo: Avoid this import
@@ -36,16 +36,15 @@ getBidR bidId = do
                    $(widgetFile "bid")
 
 
-postBidPostR :: Handler Html
-postBidPostR  = do
-    defaultLayout [whamlet|<p>Post will be here|]
---    ((result, widget), enctype) <- runFormPost personForm
---    case result of
---        FormSuccess bid -> defaultLayout [whamlet|<p> #{show bid}|]
---        _ -> defaultLayout
---            [whamlet|
---                <p>Invalid input, let's try again.
---                <form method=post action=@{BidPostR} enctype=#{enctype}>
---                    ^{widget}
---                    <button>Submit
---            |]
+postBidPostR :: ItemDbId -> Handler Html
+postBidPostR itemDbId = do
+      ((result, widget), enctype) <- runFormPost (bidPostForm itemDbId)
+      case result of
+          FormSuccess bvf -> defaultLayout [whamlet|<p> #{show bvf}|]
+          _ -> defaultLayout
+              [whamlet|
+                  <p>Invalid input, let's try again.
+                  <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>
+                      ^{widget}
+                      <button>Submit
+              |]

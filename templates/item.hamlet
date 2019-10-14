@@ -7,7 +7,7 @@
         Item: #{show item}
 
     <p>
-        <form method=post action=@{BidPostR} enctype=#{enctype}>
+        <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>
             ^{widget}
             <button>Submit
 

@@ -34,6 +34,13 @@ data Bid = Bid
   , bidCreated :: UTCTime
   } deriving (Show, Generic)
 
+{-| Bid info submitted via form, abbreviated as `bvf` .-}
+data BidViaForm = BidViaForm
+    { bvfItemId :: ItemDbId
+    , bvfAmount :: Amount
+    , bvfBidderNumber :: Maybe Int
+    } deriving (Show, Generic)
+
 data BidVPrivileges
   = NonPrivileged
   | Author
@@ -158,15 +165,12 @@ positiveAmount bid =
 
 
 
-bidPostForm :: ItemDbId -> (UserId, UserUuid) -> Form Bid
-bidPostForm itemDbId (userId, userUuid)= renderDivs $ Bid
+bidPostForm :: ItemDbId -> Form BidViaForm
+bidPostForm itemDbId = renderDivs $ BidViaForm
     <$> pure itemDbId
-    <*> pure BidTypeMail
     <*> areq amountField "Amount" (Just $ Amount 100)
-    <*> pure (userId, userUuid)
+    -- @todo: Add Bidder number as select list
     <*> pure Nothing
-    <*> pure NotDeleted
-    <*> lift (liftIO getCurrentTime)
 
 
 -- amountField :: (Functor m, Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m (Sum Int)
@@ -177,3 +181,9 @@ amountField = convertField Amount getAmount intField
 -- getAmount :: Amount => Int
 getAmount (Amount amount) =
   amount
+
+
+
+--bidViaPostToBid :: BidViaForm -> Handler (Either Text Bid)
+--bidViaPostToBid bvf =
+--
