@@ -6,6 +6,7 @@ module Models.Bid where
 
 import Data.Aeson.Types
 import Data.Either
+import Data.Monoid
 import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import
@@ -154,3 +155,25 @@ positiveAmount bid =
                    pack
                      ("Bid amount must be above zero, but it is " <> show amount)
               else Right ()
+
+
+
+bidPostForm :: ItemDbId -> (UserId, UserUuid) -> Form Bid
+bidPostForm itemDbId (userId, userUuid)= renderDivs $ Bid
+    <$> pure itemDbId
+    <*> pure BidTypeMail
+    <*> areq amountField "Amount" (Just $ Amount 100)
+    <*> pure (userId, userUuid)
+    <*> pure Nothing
+    <*> pure NotDeleted
+    <*> lift (liftIO getCurrentTime)
+
+
+-- amountField :: (Functor m, Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m (Sum Int)
+amountField = convertField Amount getAmount intField
+
+
+-- @todo: Move to types
+-- getAmount :: Amount => Int
+getAmount (Amount amount) =
+  amount

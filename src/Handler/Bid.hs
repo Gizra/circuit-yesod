@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Handler.Bid where
@@ -11,7 +12,7 @@ import Database.Persist.Sql (fromSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid)
+import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid, bidPostForm)
 import Models.Item (mkItem, Item(..))
 
 getBidR :: BidId -> Handler Html
@@ -33,3 +34,18 @@ getBidR bidId = do
             in defaultLayout $ do
                    setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
                    $(widgetFile "bid")
+
+
+postBidPostR :: Handler Html
+postBidPostR  = do
+    defaultLayout [whamlet|<p>Post will be here|]
+--    ((result, widget), enctype) <- runFormPost personForm
+--    case result of
+--        FormSuccess bid -> defaultLayout [whamlet|<p> #{show bid}|]
+--        _ -> defaultLayout
+--            [whamlet|
+--                <p>Invalid input, let's try again.
+--                <form method=post action=@{BidPostR} enctype=#{enctype}>
+--                    ^{widget}
+--                    <button>Submit
+--            |]

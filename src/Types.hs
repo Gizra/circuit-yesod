@@ -7,7 +7,7 @@ import Database.Persist.TH
 import GHC.Generics
 import Prelude
 
-data Amount =
+newtype Amount =
   Amount Int
   deriving (Show, Generic)
 

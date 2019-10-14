@@ -13,6 +13,7 @@
 
 /profile ProfileR GET
 
+/bid BidPostR POST
 /bid/#BidDbId BidR GET
 
 /item/#Text ItemR GET

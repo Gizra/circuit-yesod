@@ -6,6 +6,11 @@
     <p>
         Item: #{show item}
 
+    <p>
+        <form method=post action=@{BidPostR} enctype=#{enctype}>
+            ^{widget}
+            <button>Submit
+
     $if null bidsList
         <p>No Bids
     $else
@@ -22,3 +27,6 @@
                         <a href="@{BidR bidId}">##{show $ fromSqlKey bidId}
                      <td>
                         #{show $ bidBidderNumber bid}
+
+
+
