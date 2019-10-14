@@ -24,7 +24,7 @@ data Item = Item
 
 
 
-mkItem :: (ItemDbId, ItemDb) -> Handler (Either Text Item)
+mkItem :: (ItemDbId, ItemDb) -> Handler Item
 mkItem (itemDbId, itemDb) = do
   bidDbs <- runDB $ selectList [BidDbItemId ==. itemDbId] []
   bids <-
@@ -39,7 +39,7 @@ mkItem (itemDbId, itemDb) = do
              Right bid -> Map.insert bidId bid accum)
       Map.empty
       bidDbs
-  return $ Right Item {
+  return $ Item {
     itemUuid = itemDbUuid itemDb
     , itemMailBids = bids
     }

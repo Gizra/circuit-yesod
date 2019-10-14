@@ -28,8 +28,7 @@ data Bid = Bid
   { bidItemDbId :: ItemDbId
   , bidType :: BidType
   , bidAmount :: Amount
-  -- @todo: Keep only the user ID, and calc the user UUID when needed.
-  , bidAuthor :: (UserId, UserUuid)
+  , bidAuthor :: UserId
   , bidBidderNumber :: Maybe Int
   , bidDeleted :: BidDeleted
   , bidCreated :: UTCTime
@@ -61,7 +60,11 @@ instance ToJSON BidEntityWithPrivileges where
           case bidVPrivileges of
             NonPrivileged -> []
             Author -> []
-            Privileged -> ["author_uuid" .= snd (bidAuthor bid)]
+            Privileged ->
+
+            -- @todo: How to get the UUID now?
+                []
+            -- ["author_uuid" .= snd (bidAuthor bid)]
     in object $ jsonDefault <> jsonPerViewAccess
 
 instance ToJSON Amount where
@@ -95,7 +98,7 @@ mkBid bidDb = do
         { bidItemDbId = bidDbItemId bidDb
         , bidType = bidDbType_ bidDb
         , bidAmount = Amount $ bidDbAmount bidDb
-        , bidAuthor = (bidDbAuthor bidDb, userUuid author)
+        , bidAuthor = bidDbAuthor bidDb
         , bidBidderNumber = bidDbBidderNumber bidDb
         , bidDeleted = bidDeleted_
         , bidCreated = bidDbCreated bidDb
@@ -113,7 +116,7 @@ getDbValues bid =
      { bidDbItemId = bidItemDbId bid
      , bidDbType_ = bidType bid
      , bidDbAmount = amount
-     , bidDbAuthor = fst (bidAuthor bid)
+     , bidDbAuthor = bidAuthor bid
      , bidDbBidderNumber = bidBidderNumber bid
      , bidDbDeletedAuthor = deletedAuthor
      , bidDbDeletedReason = deletedReason
@@ -185,5 +188,20 @@ getAmount (Amount amount) =
 
 
 
-
-
+bidViaPostToBid :: BidViaForm -> Handler Bid
+bidViaPostToBid bvf = do
+    userId <- requireAuthId
+    let itemDbId = bvfItemDbId bvf
+    -- Confirm Item ID is valid, if not short-circuit it.
+    itemDb <- runDB $ get404 itemDbId
+    now <- liftIO getCurrentTime
+    return $
+        Bid
+        { bidItemDbId = itemDbId
+        , bidType = BidTypeMail
+        , bidAmount = bvfAmount bvf
+        , bidAuthor = userId
+        , bidBidderNumber = bvfBidderNumber bvf
+        , bidDeleted = NotDeleted
+        , bidCreated = now
+        }

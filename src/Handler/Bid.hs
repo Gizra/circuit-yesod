@@ -25,69 +25,53 @@ getBidR bidId = do
     Right bid -> do
         let itemId = bidItemDbId bid
         itemDb <- runDB $ get404 itemId
-        eitherItem <- mkItem (itemId, itemDb)
-        case eitherItem of
-          Left err -> invalidArgs [err]
-          Right item ->
-            let bidTuple = (bidId, bid)
-                encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
-                encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.NonPrivileged)
-            in defaultLayout $ do
-                   setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
-                   $(widgetFile "bid")
+        item <- mkItem (itemId, itemDb)
+        let bidTuple = (bidId, bid)
+            encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
+            encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.NonPrivileged)
+        defaultLayout $ do
+               setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
+               $(widgetFile "bid")
 
 
 postBidPostR :: ItemDbId -> Handler Html
-postBidPostR itemDbId = do
-      ((result, widget), enctype) <- runFormPost (bidPostForm itemDbId)
-      case result of
-          FormSuccess bvf -> do
-              maybeBid <- bidViaPostToBid bvf
-              case maybeBid of
-                  Left err -> invalidArgs [err]
-                  Right bid ->
-                        defaultLayout [whamlet|
-                            <h2>
-                                Bid via form
-
-                            <p>
-                                #{show bvf}
-
-                            <h2> Bid
-
-                            <p>
-                                #{show bid}
-
-                        |]
-          _ -> defaultLayout
+postBidPostR itemId = do
+    ((result, widget), enctype) <- runFormPost (bidPostForm itemId)
+    case result of
+        FormSuccess bvf -> do
+            bid <- bidViaPostToBid bvf
+            itemDb <- runDB $ get404 itemId
+            item <- mkItem (itemId, itemDb)
+            defaultLayout $ do
+                setTitle "Bid post"
+                $(widgetFile "bid-post")
+        _ -> defaultLayout
               [whamlet|
                   <p>Invalid input, let's try again.
-                  <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>
+                  <form method=post action=@{BidPostR itemId} enctype=#{enctype}>
                       ^{widget}
                       <button>Submit
               |]
 
 
 
-bidViaPostToBid :: BidViaForm -> Handler (Either Text Bid)
+-- @todo: Should this be here, since it returns a Handler?
+bidViaPostToBid :: BidViaForm -> Handler Bid
 bidViaPostToBid bvf = do
-    (userId, user) <- requireAuthPair
+    userId <- requireAuthId
     let itemDbId = bvfItemDbId bvf
+    -- Confirm Item ID is valid, if not short-circuit it.
+    -- @todo: Would it be better to have a pure BVF -> BId, which gets a validated ItemId?
     itemDb <- runDB $ get404 itemDbId
-    eitherItem <- mkItem (itemDbId, itemDb)
-    case eitherItem of
-        Left err -> invalidArgs [err]
-        Right item -> do
-            now <- liftIO getCurrentTime
-            return $
-                Right
-                Bid
-                { bidItemDbId = itemDbId
-                , bidType = BidTypeMail
-                , bidAmount = bvfAmount bvf
-                , bidAuthor = (userId, userUuid user)
-                , bidBidderNumber = bvfBidderNumber bvf
-                , bidDeleted = NotDeleted
-                , bidCreated = now
-                }
+    now <- liftIO getCurrentTime
+    return $
+        Bid
+        { bidItemDbId = itemDbId
+        , bidType = BidTypeMail
+        , bidAmount = bvfAmount bvf
+        , bidAuthor = userId
+        , bidBidderNumber = bvfBidderNumber bvf
+        , bidDeleted = NotDeleted
+        , bidCreated = now
+        }
 
