@@ -28,6 +28,7 @@ data Bid = Bid
   { bidItemDbId :: ItemDbId
   , bidType :: BidType
   , bidAmount :: Amount
+  -- @todo: Keep only the user ID, and calc the user UUID when needed.
   , bidAuthor :: (UserId, UserUuid)
   , bidBidderNumber :: Maybe Int
   , bidDeleted :: BidDeleted
@@ -36,7 +37,7 @@ data Bid = Bid
 
 {-| Bid info submitted via form, abbreviated as `bvf` .-}
 data BidViaForm = BidViaForm
-    { bvfItemId :: ItemDbId
+    { bvfItemDbId :: ItemDbId
     , bvfAmount :: Amount
     , bvfBidderNumber :: Maybe Int
     } deriving (Show, Generic)
@@ -184,6 +185,5 @@ getAmount (Amount amount) =
 
 
 
---bidViaPostToBid :: BidViaForm -> Handler (Either Text Bid)
---bidViaPostToBid bvf =
---
+
+

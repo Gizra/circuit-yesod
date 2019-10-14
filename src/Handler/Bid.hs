@@ -12,8 +12,9 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid, bidPostForm)
+import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid, bidPostForm, BidViaForm(..), BidDeleted(..))
 import Models.Item (mkItem, Item(..))
+import Types (BidType(BidTypeMail))
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do
@@ -40,7 +41,24 @@ postBidPostR :: ItemDbId -> Handler Html
 postBidPostR itemDbId = do
       ((result, widget), enctype) <- runFormPost (bidPostForm itemDbId)
       case result of
-          FormSuccess bvf -> defaultLayout [whamlet|<p> #{show bvf}|]
+          FormSuccess bvf -> do
+              maybeBid <- bidViaPostToBid bvf
+              case maybeBid of
+                  Left err -> invalidArgs [err]
+                  Right bid ->
+                        defaultLayout [whamlet|
+                            <h2>
+                                Bid via form
+
+                            <p>
+                                #{show bvf}
+
+                            <h2> Bid
+
+                            <p>
+                                #{show bid}
+
+                        |]
           _ -> defaultLayout
               [whamlet|
                   <p>Invalid input, let's try again.
@@ -48,3 +66,28 @@ postBidPostR itemDbId = do
                       ^{widget}
                       <button>Submit
               |]
+
+
+
+bidViaPostToBid :: BidViaForm -> Handler (Either Text Bid)
+bidViaPostToBid bvf = do
+    (userId, user) <- requireAuthPair
+    let itemDbId = bvfItemDbId bvf
+    itemDb <- runDB $ get404 itemDbId
+    eitherItem <- mkItem (itemDbId, itemDb)
+    case eitherItem of
+        Left err -> invalidArgs [err]
+        Right item -> do
+            now <- liftIO getCurrentTime
+            return $
+                Right
+                Bid
+                { bidItemDbId = itemDbId
+                , bidType = BidTypeMail
+                , bidAmount = bvfAmount bvf
+                , bidAuthor = (userId, userUuid user)
+                , bidBidderNumber = bvfBidderNumber bvf
+                , bidDeleted = NotDeleted
+                , bidCreated = now
+                }
+
