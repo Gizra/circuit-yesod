@@ -44,7 +44,7 @@ postBidPostR itemId = do
             item <- mkItem (itemId, itemDb)
             maybeBidId <- Models.Bid.save (Nothing, bid) True
             case maybeBidId of
-                Left errors -> invalidArgs errors
+                Left err -> invalidArgs [err]
                 Right bidId ->
                     defaultLayout $ do
                         setTitle "Bid post"

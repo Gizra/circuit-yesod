@@ -129,43 +129,97 @@ getDbValues bid =
 
 @todo: Break on first error. EitherT?
 -}
-save :: (Maybe BidId, Bid) -> Bool -> Handler (Either [Text] BidId)
+save :: (Maybe BidId, Bid) -> Bool -> Handler (Either Text BidId)
 save (maybeBidId, bid) validate =
-  let bidDb = getDbValues bid
-      saveDo =
-        case maybeBidId of
-          Just bidId -> do
-            _ <- runDB $ replace bidId bidDb
-            return $ Right bidId
-          Nothing -> do
-            bidId <- runDB $ insert bidDb
-            return $ Right bidId
-  in if validate
-       then do
-         let validations = [positiveAmount bid]
-             lefts' = Data.Either.lefts validations
-         if not $ Import.null lefts'
-           then return $ Left lefts'
-           else saveDo
-       else saveDo
+    let bidDb = getDbValues bid
+        saveDo =
+            case maybeBidId of
+                Just bidId -> do
+                    _ <- runDB $ replace bidId bidDb
+                    return $ Right bidId
+                Nothing -> do
+                    bidId <- runDB $ insert bidDb
+                    return $ Right bidId
+    in if validate
+        then do
+        let validations =
+                [ positiveAmount
+                ]
+
+            hasError = foldl
+                        (\accum func ->
+                            if isJust accum
+                                -- We found the first error, so we can stop validating.
+                                then accum
+                                else func (maybeBidId, bid)
+                        )
+                        Nothing
+                        validations
+
+        case hasError of
+            Nothing -> do
+                -- Keep validating on functions that require IO.
+                let validationsHandler =
+                              [ higherAmount
+                              ]
+
+                hasErrorHandler <- foldM
+                                      (\accum func ->
+                                          if isJust accum
+                                              -- We found the first error, so we can stop validating.
+                                              then return accum
+                                              else func (maybeBidId, bid)
+                                      )
+                                      Nothing
+                                      validationsHandler
+
+                case hasErrorHandler of
+                    Nothing -> saveDo
+                    Just error ->
+                        return $ Left error
+            Just error ->
+                return $ Left error
+        else
+            -- Save without validations.
+            saveDo
+
+
 
 -- Validations
-positiveAmount :: Bid -> Either Text ()
-positiveAmount bid =
+positiveAmount :: (Maybe BidId, Bid) -> Maybe Text
+positiveAmount (_, bid) =
   let (Amount amount) = bidAmount bid
       zeroAllowed =
         case bidType bid of
           BidTypeMail -> True
           _ -> False
   in if amount < 0
-       then Left $
+       then Just $
             pack
               ("Bid amount must be a positive value, but it is " <> show amount)
        else if amount == 0 && zeroAllowed
-              then Left $
+              then Just $
                    pack
                      ("Bid amount must be above zero, but it is " <> show amount)
-              else Right ()
+              else Nothing
+
+
+{-| Assert no existing Bid with higher amount.
+
+@todo: Adapt business logic.
+-}
+higherAmount :: (Maybe BidId, Bid) -> Handler (Maybe Text)
+higherAmount (maybeBidId, bid) = do
+    -- @todo: If Just Bid ID, ignore it.
+    let (Amount amount) = bidAmount bid
+    count_ <- runDB $ count [BidDbItemId ==. bidItemDbId bid, BidDbAmount >=. amount]
+    return $
+        if count_ == 0
+        then
+            Nothing
+        else
+            Just "Bid amount should be higher than other bids"
+
 
 
 
