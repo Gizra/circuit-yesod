@@ -4,9 +4,6 @@
         Item
 
     <p>
-        Item: #{show item}
-
-    <p>
         <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>
             ^{widget}
             <button>Submit
@@ -21,6 +18,8 @@
                         Bid ID
                     <th>
                         Bidder number
+                    <th>
+                        Debug
             $forall (bidId, bid) <- bidsList
                 <tr>
                     <td>
@@ -28,5 +27,11 @@
                      <td>
                         #{show $ bidBidderNumber bid}
 
+                     <td>
+                        #{show bid}
 
 
+
+
+    <p>
+        Item: #{show item}

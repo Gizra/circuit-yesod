@@ -21,7 +21,7 @@ getItemR itemUuid_ = do
     item <- mkItem (itemDbId, itemDb_)
     -- Generate the form to be displayed
     (widget, enctype) <- generateFormPost (bidPostForm itemDbId)
-    let bidsList = Map.toList (itemMailBids item)
+    let bidsList = reverse $ Map.toList (itemMailBids item)
     defaultLayout $ do
         setTitle . toHtml $ "Item #" <> itemUuid_
         $(widgetFile "item")

@@ -12,7 +12,7 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid, bidPostForm, BidViaForm(..), BidDeleted(..))
+import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid, bidPostForm, BidViaForm(..), BidDeleted(..), save)
 import Models.Item (mkItem, Item(..))
 import Types (BidType(BidTypeMail))
 
@@ -42,9 +42,13 @@ postBidPostR itemId = do
             bid <- bidViaPostToBid bvf
             itemDb <- runDB $ get404 itemId
             item <- mkItem (itemId, itemDb)
-            defaultLayout $ do
-                setTitle "Bid post"
-                $(widgetFile "bid-post")
+            maybeBidId <- Models.Bid.save (Nothing, bid) True
+            case maybeBidId of
+                Left errors -> invalidArgs errors
+                Right bid ->
+                    defaultLayout $ do
+                        setTitle "Bid post"
+                        $(widgetFile "bid-post")
         _ -> defaultLayout
               [whamlet|
                   <p>Invalid input, let's try again.
