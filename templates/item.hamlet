@@ -33,10 +33,20 @@
                         #{getAmount $ bidAmount bid}
 
                     <td>
-                        #{show bid}
+                        <details>
+                            <summary>
+                                Bid debug
+
+                            <p>
+                                #{show bid}
 
 
 
 
-    <p>
-        Item: #{show item}
+
+    <details>
+        <summary>
+            Item debug
+
+        <p>
+            #{show item}
