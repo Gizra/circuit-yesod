@@ -12,7 +12,8 @@ import Database.Persist.Sql (fromSqlKey)
 -- @todo: Avoid this import
 import Models.Bid (Bid(..))
 import Models.BidUtility (bidPostForm, getAmount)
-import Models.Item (mkItem, Item(..))
+import Models.Item (Item(..))
+import Models.ItemUtility (mkItem)
 import qualified Data.Map.Strict as Map
 
 getItemR :: Text -> Handler Html

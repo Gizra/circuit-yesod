@@ -12,7 +12,8 @@ import Database.Persist.Sql (fromSqlKey)
 
 -- @todo: Avoid this import
 import Models.Bid (Bid(..))
-import Models.Item (mkItem, Item(..), ivfForm)
+import Models.Item (Item(..))
+import Models.ItemUtility (mkItem, ivfForm)
 import qualified Data.Map.Strict as Map
 
 getItemEditR :: Text -> Handler Html

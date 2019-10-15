@@ -49,7 +49,6 @@ data BidVPrivileges
   deriving (Show, Generic)
 
 
-
 data BidEntityWithPrivileges =
   BidEntityWithPrivileges (BidId, Bid) BidVPrivileges
   deriving (Show, Generic)

@@ -34,61 +34,14 @@ data ItemViaForm = ItemViaForm
     , ivfStatus ::  ItemStatus
     } deriving (Show, Generic)
 
-mkItem :: (ItemDbId, ItemDb) -> Handler Item
-mkItem (itemDbId, itemDb) = do
-  bidDbs <- runDB $ selectList [BidDbItemId ==. itemDbId] []
-  bids <-
-    Data.Foldable.foldlM
-      (\accum (Entity bidId bidDb) -> do
-         eitherBid <- mkBid bidDb
-             -- @todo: We should skip the invalid Bid, and indeed let the Item
-             -- come back, but we should raise some kind of exception.
-         return $
-           case eitherBid of
-             Left err -> accum
-             Right bid -> Map.insert bidId bid accum)
-      Map.empty
-      bidDbs
-  return $ Item {
-    itemUuid = itemDbUuid itemDb
-    , itemMailBids = bids
-    , itemOpeningPrice = Amount $ itemDbOpeningPrice itemDb
-    , itemStatus = itemDbStatus itemDb
+
+{-| All data needed to validate a Bid before save.
+
+@todo: Should live here?
+-}
+data ContextForBidSave = ContextForBidSave
+    -- Saved Bid already has the Item ID.
+    { cbsItem :: Item
+    , cbsSale :: (SaleId, Sale)
     }
 
--- Crud
-{-| Save an Item.
--}
-save :: (Maybe ItemId, Item) -> Bool -> Handler (Either Text (ItemId, Item))
-save (maybeItemId, item) validate =
-    return $ Left "@todo: Implement"
-
-
-
-ivfForm :: ItemDbId -> Maybe Item -> Form ItemViaForm
-ivfForm itemDbId mitem = renderDivs $ ItemViaForm
-    <$> areq amountField "Amount" (itemOpeningPrice <$> mitem)
-    <*> areq (selectFieldList statusList) "Status" (itemStatus <$> mitem)
-    where
-        statusList :: [(Text, ItemStatus)]
-        statusList = [
-              ("Pending" :: Text, ItemStatusPending)
-              , ("Active" :: Text, ItemStatusActive)
-              , ("Going" :: Text, ItemStatusGoing)
-              , ("Gone" :: Text, ItemStatusGone)
-              , ("Sold" :: Text, ItemStatusSold)
-              , ("Unsold" :: Text, ItemStatusUnsold)
-            ]
-
-
--- @todo: Where to move those to avoid duplication?
--- @todo: Fix type signature
--- amountField :: (Functor m, Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m (Sum Int)
-amountField = convertField Amount getAmount intField
-
-
--- @todo: Move to helper to types?
--- @todo: Fix type signature
--- getAmount :: Amount => Int
-getAmount (Amount amount) =
-  amount
