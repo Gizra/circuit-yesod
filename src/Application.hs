@@ -44,6 +44,7 @@ import Handler.Comment
 import Handler.Common
 import Handler.Home
 import Handler.Item
+import Handler.ItemEdit
 import Handler.Profile
 
 -- This line actually creates our YesodDispatch instance. It is the second half
@@ -187,3 +188,4 @@ handler h = getAppSettings >>= makeFoundation >>= flip unsafeHandler h
 -- | Run DB queries
 db :: ReaderT SqlBackend Handler a -> IO a
 db = handler . runDB
+

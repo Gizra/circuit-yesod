@@ -16,5 +16,5 @@
 /bid/#BidDbId BidR GET
 /bid-create/#ItemDbId BidPostR POST
 
-
 /item/#Text ItemR GET
+/item/#Text/edit ItemEditR GET

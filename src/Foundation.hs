@@ -166,10 +166,16 @@ instance Yesod App
   isAuthorized FaviconR _ = return Authorized
   isAuthorized RobotsR _ = return Authorized
   isAuthorized (StaticR _) _ = return Authorized
+
     -- the profile route requires that the user is authenticated, so we
     -- delegate to that function
   isAuthorized (BidPostR _) _ = isAuthenticated
+  isAuthorized (ItemEditR _) _ = isAuthenticated
   isAuthorized ProfileR _ = isAuthenticated
+
+  -- Forbid access in case explicit grant not given.
+  isAuthorized _ _ = return $ Unauthorized "No access defined for the page"
+
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of

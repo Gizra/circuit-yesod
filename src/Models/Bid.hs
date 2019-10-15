@@ -34,7 +34,8 @@ data Bid = Bid
   , bidCreated :: UTCTime
   } deriving (Show, Generic)
 
-{-| Bid info submitted via form, abbreviated as `bvf` .-}
+{-| Bid submitted via form, abbreviated as `bvf`.
+-}
 data BidViaForm = BidViaForm
     { bvfItemDbId :: ItemDbId
     , bvfAmount :: Amount
@@ -175,10 +176,10 @@ save (maybeBidId, bid) validate =
 
                 case hasErrorHandler of
                     Nothing -> saveDo
-                    Just error ->
-                        return $ Left error
-            Just error ->
-                return $ Left error
+                    Just err ->
+                        return $ Left err
+            Just err ->
+                return $ Left err
         else
             -- Save without validations.
             saveDo
@@ -231,18 +232,6 @@ bidPostForm itemDbId = renderDivs $ BidViaForm
     <*> pure Nothing
 
 
--- @todo: Move to helper to types?
--- @todo: Fix type signature
--- amountField :: (Functor m, Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m (Sum Int)
-amountField = convertField Amount getAmount intField
-
-
--- @todo: Move to helper to types?
--- @todo: Fix type signature
--- getAmount :: Amount => Int
-getAmount (Amount amount) =
-  amount
-
 
 bidViaPostToBid :: BidViaForm -> Handler Bid
 bidViaPostToBid bvf = do
@@ -261,3 +250,16 @@ bidViaPostToBid bvf = do
         , bidDeleted = NotDeleted
         , bidCreated = now
         }
+
+
+-- @todo: Where to move those to avoid duplication?
+-- @todo: Fix type signature
+-- amountField :: (Functor m, Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m (Sum Int)
+amountField = convertField Amount getAmount intField
+
+
+-- @todo: Move to helper to types?
+-- @todo: Fix type signature
+-- getAmount :: Amount => Int
+getAmount (Amount amount) =
+  amount

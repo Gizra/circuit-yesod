@@ -60,12 +60,18 @@ library:
       - -Wall
       - -fwarn-tabs
       - -O0
+      - -Werror=missing-fields
+      - -Werror=incomplete-patterns
+      - -Werror=name-shadowing
       cpp-options: -DDEVELOPMENT
     else:
       ghc-options:
       - -Wall
       - -fwarn-tabs
       - -O2
+      - -Werror=missing-fields
+      - -Werror=incomplete-patterns
+      - -Werror=name-shadowing
 
 # Runnable executable for our application
 executables:
