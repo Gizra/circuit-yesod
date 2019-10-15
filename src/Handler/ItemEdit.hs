@@ -11,7 +11,7 @@ import Import
 import Database.Persist.Sql (fromSqlKey)
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), bidPostForm, getAmount)
+import Models.Bid (Bid(..))
 import Models.Item (mkItem, Item(..), ivfForm)
 import qualified Data.Map.Strict as Map
 

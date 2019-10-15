@@ -13,7 +13,8 @@ import GHC.Generics
 import Import
 
 -- @todo: How to avoid this import?
-import Models.Bid (Bid, BidId, mkBid)
+import Models.Bid (Bid, BidId)
+import Models.BidUtility (mkBid)
 import Types (Amount(..), ItemStatus(..))
 
 type ItemId = ItemDbId
@@ -32,8 +33,6 @@ data ItemViaForm = ItemViaForm
     { ivfOpeningPrice :: Amount
     , ivfStatus ::  ItemStatus
     } deriving (Show, Generic)
-
-
 
 mkItem :: (ItemDbId, ItemDb) -> Handler Item
 mkItem (itemDbId, itemDb) = do
@@ -56,6 +55,14 @@ mkItem (itemDbId, itemDb) = do
     , itemOpeningPrice = Amount $ itemDbOpeningPrice itemDb
     , itemStatus = itemDbStatus itemDb
     }
+
+-- Crud
+{-| Save an Item.
+-}
+save :: (Maybe ItemId, Item) -> Bool -> Handler (Either Text (ItemId, Item))
+save (maybeItemId, item) validate =
+    return $ Left "@todo: Implement"
+
 
 
 ivfForm :: ItemDbId -> Maybe Item -> Form ItemViaForm

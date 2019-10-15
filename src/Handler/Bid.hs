@@ -12,7 +12,8 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), mkBid, bidPostForm, BidViaForm(..), BidDeleted(..), save)
+import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), BidViaForm(..), BidDeleted(..))
+import Models.BidUtility (mkBid, bidPostForm, save)
 import Models.Item (mkItem, Item(..))
 import Types (BidType(BidTypeMail))
 
@@ -42,10 +43,10 @@ postBidPostR itemId = do
             bid <- bidViaPostToBid bvf
             itemDb <- runDB $ get404 itemId
             item <- mkItem (itemId, itemDb)
-            maybeBidId <- Models.Bid.save (Nothing, bid) True
+            maybeBidId <- Models.BidUtility.save (Nothing, bid) True
             case maybeBidId of
                 Left err -> invalidArgs [err]
-                Right bidId ->
+                Right _ ->
                     defaultLayout $ do
                         setTitle "Bid post"
                         $(widgetFile "bid-post")
@@ -66,7 +67,7 @@ bidViaPostToBid bvf = do
     let itemDbId = bvfItemDbId bvf
     -- Confirm Item ID is valid, if not short-circuit it.
     -- @todo: Would it be better to have a pure BVF -> BId, which gets a validated ItemId?
-    itemDb <- runDB $ get404 itemDbId
+    _ <- runDB $ get404 itemDbId
     now <- liftIO getCurrentTime
     return $
         Bid
