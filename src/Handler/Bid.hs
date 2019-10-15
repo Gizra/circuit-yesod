@@ -13,9 +13,9 @@ import Import
 
 -- @todo: Avoid this import
 import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), BidViaForm(..), BidDeleted(..))
-import Models.BidUtility (mkBid, bidPostForm, save)
+import Models.BidUtility (bidPostForm, save)
 import Models.Item (Item(..))
-import Models.ItemUtility (mkItem)
+import Models.ItemUtility (mkItem, mkBid)
 import Types (BidType(BidTypeMail))
 
 getBidR :: BidId -> Handler Html

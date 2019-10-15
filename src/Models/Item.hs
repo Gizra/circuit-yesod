@@ -14,7 +14,6 @@ import Import
 
 -- @todo: How to avoid this import?
 import Models.Bid (Bid, BidId)
-import Models.BidUtility (mkBid)
 import Types (Amount(..), ItemStatus(..))
 
 type ItemId = ItemDbId
@@ -35,13 +34,4 @@ data ItemViaForm = ItemViaForm
     } deriving (Show, Generic)
 
 
-{-| All data needed to validate a Bid before save.
-
-@todo: Should live here?
--}
-data ContextForBidSave = ContextForBidSave
-    -- Saved Bid already has the Item ID.
-    { cbsItem :: Item
-    , cbsSale :: (SaleId, Sale)
-    }
 
