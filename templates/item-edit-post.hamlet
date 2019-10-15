@@ -1,0 +1,11 @@
+<div .ui.container>
+
+    <h2>
+        Item via form
+
+    <p>
+        #{show ivf}
+
+    <p>
+        <a href="@{ItemEditR itemUuid_}">
+            Go to Item

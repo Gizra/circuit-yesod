@@ -14,7 +14,7 @@ import Import
 
 -- @todo: How to avoid this import?
 import Models.Bid (Bid, BidId, mkBid)
-import Types (Amount(..), ItemStatus)
+import Types (Amount(..), ItemStatus(..))
 
 type ItemId = ItemDbId
 
@@ -30,7 +30,7 @@ data Item = Item
 -}
 data ItemViaForm = ItemViaForm
     { ivfOpeningPrice :: Amount
---    , ivfStatus ::  ItemStatus
+    , ivfStatus ::  ItemStatus
     } deriving (Show, Generic)
 
 
@@ -61,9 +61,17 @@ mkItem (itemDbId, itemDb) = do
 ivfForm :: ItemDbId -> Maybe Item -> Form ItemViaForm
 ivfForm itemDbId mitem = renderDivs $ ItemViaForm
     <$> areq amountField "Amount" (itemOpeningPrice <$> mitem)
-    -- @todo: Add Bidder number as select list
-
-
+    <*> areq (selectFieldList statusList) "Status" (itemStatus <$> mitem)
+    where
+        statusList :: [(Text, ItemStatus)]
+        statusList = [
+              ("Pending" :: Text, ItemStatusPending)
+              , ("Active" :: Text, ItemStatusActive)
+              , ("Going" :: Text, ItemStatusGoing)
+              , ("Gone" :: Text, ItemStatusGone)
+              , ("Sold" :: Text, ItemStatusSold)
+              , ("Unsold" :: Text, ItemStatusUnsold)
+            ]
 
 
 -- @todo: Where to move those to avoid duplication?

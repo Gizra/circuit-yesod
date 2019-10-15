@@ -17,4 +17,4 @@
 /bid-create/#ItemDbId BidPostR POST
 
 /item/#Text ItemR GET
-/item/#Text/edit ItemEditR GET
+/item/#Text/edit ItemEditR GET POST

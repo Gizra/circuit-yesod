@@ -33,6 +33,7 @@ data ItemStatus
   = ItemStatusPending
   | ItemStatusActive
   | ItemStatusGoing
+  | ItemStatusGone
   | ItemStatusSold
   | ItemStatusUnsold
   deriving (Show, Eq, Enum, Bounded, Read, Generic)
