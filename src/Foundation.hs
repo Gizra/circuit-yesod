@@ -20,6 +20,7 @@ import Text.Jasmine (minifym)
 import Yesod.Auth.Dummy
 
 import qualified Data.CaseInsensitive as CI
+import qualified Data.Map.Strict as Map
 import qualified Data.Text.Encoding as TE
 import Yesod.Auth.OpenId (IdentifierType(Claimed), authOpenId)
 import Yesod.Core.Types (Logger)
@@ -36,6 +37,11 @@ data App = App
   , appConnPool :: ConnectionPool -- ^ Database connection pool.
   , appHttpManager :: Manager
   , appLogger :: Logger
+  -- @todo: Use something like ttrie?
+  -- http://hackage.haskell.org/package/ttrie-0.1.2.1/docs/Control-Concurrent-STM-Map.html
+
+  -- , appBidPlace :: TVar (Map.Map ItemDbId (TMVar ()))
+  , appBidPlace :: TMVar ()
   }
 
 data MenuItem = MenuItem
