@@ -48,6 +48,7 @@ dependencies:
 - blaze-html
 - yesod-lucid
 - lucid
+- pusher-http-haskell
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.
