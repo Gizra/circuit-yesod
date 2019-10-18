@@ -39,7 +39,7 @@ database:
 
 # https://github.com/WillSewell/pusher-http-haskell/blob/90c3610094e724f97eea525e958c271e4c1f65a1/src/Network/Pusher/Data.hs#L98-L103
 pusher:
-  app-id: "_env:YESOD_PUSHER_ID:'123'"
+  app-id: "_env:YESOD_PUSHER_ID:123"
   app-key: "_env:YESOD_PUSHER_KEY:key"
   app-secret: "_env:YESOD_PUSHER_SECRET:secret"
   app-cluster: "_env:YESOD_PUSHER_CLUSTER:eu"
