@@ -15,6 +15,7 @@ import qualified Control.Exception           as Exception
 import           Data.Aeson                  (Result (..), fromJSON, withObject,
                                               (.!=), (.:?))
 import           Data.FileEmbed              (embedFile)
+import qualified Network.Pusher              as Pusher
 import           Data.Yaml                   (decodeEither')
 import           Database.Persist.Postgresql (PostgresConf)
 import           Language.Haskell.TH.Syntax  (Exp, Name, Q)
@@ -62,6 +63,8 @@ data AppSettings = AppSettings
 
     , appAuthDummyLogin         :: Bool
     -- ^ Indicate if auth dummy login should be enabled.
+
+    , appPusherCredentials      :: Pusher.Credentials
     }
 
 instance FromJSON AppSettings where
@@ -91,6 +94,8 @@ instance FromJSON AppSettings where
         appAnalytics              <- o .:? "analytics"
 
         appAuthDummyLogin         <- o .:? "auth-dummy-login"      .!= dev
+
+        appPusherCredentials      <- o .: "pusher"
 
         return AppSettings {..}
 

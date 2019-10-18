@@ -28,6 +28,7 @@ import Database.Persist.Postgresql
 import Import
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.HTTP.Client.TLS (getGlobalManager)
+import Network.Pusher (getPusherWithConnManager, Credentials(..))
 import Network.Wai (Middleware)
 import Network.Wai.Handler.Warp
        (Settings, defaultSettings, defaultShouldDisplayException, getPort,
@@ -71,12 +72,17 @@ makeFoundation appSettings
       (appStaticDir appSettings)
 
   appBidPlace <- newEmptyTMVarIO
-    -- We need a log function to create a connection pool. We need a connection
-    -- pool to create our foundation. And we need our foundation to get a
-    -- logging function. To get out of this loop, we initially create a
-    -- temporary foundation without a real connection pool, get a log function
-    -- from there, and then create the real foundation.
-  let mkFoundation appConnPool = App {..}
+
+  let pusherCredentials = appPusherCredentials appSettings
+
+      appPusher = getPusherWithConnManager appHttpManager Nothing Nothing pusherCredentials
+
+        -- We need a log function to create a connection pool. We need a connection
+        -- pool to create our foundation. And we need our foundation to get a
+        -- logging function. To get out of this loop, we initially create a
+        -- temporary foundation without a real connection pool, get a log function
+        -- from there, and then create the real foundation.
+      mkFoundation appConnPool = App {..}
         -- The App {..} syntax is an example of record wild cards. For more
         -- information, see:
         -- https://ocharles.org.uk/blog/posts/2014-12-04-record-wildcards.html
