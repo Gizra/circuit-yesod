@@ -20,4 +20,3 @@ cabal.sandbox.config
 *~
 \#*
 circuit-yesod.cabal
-stack.yaml.lock
