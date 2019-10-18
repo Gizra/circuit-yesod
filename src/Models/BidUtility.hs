@@ -7,6 +7,7 @@ module Models.BidUtility where
 import Data.Aeson.Types
 import Data.Either
 import qualified Data.Map.Strict as Map
+import qualified Network.Pusher as Pusher
 import Data.Monoid
 import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
@@ -41,14 +42,24 @@ unlockBid var = putTMVar var ()
 save :: (Maybe BidId, Bid) -> Bool -> Handler (Either Text BidId)
 save (maybeBidId, bid) validate =
     let bidDb = getDbValues bid
-        saveDo =
-            case maybeBidId of
+        saveDo = do
+            bidId <- case maybeBidId of
                 Just bidId -> do
                     _ <- runDB $ replace bidId bidDb
-                    return $ Right bidId
+                    return bidId
                 Nothing -> do
                     bidId <- runDB $ insert bidDb
-                    return $ Right bidId
+                    return bidId
+
+            -- Trigger Pusher.
+            yesod <- getYesod
+            let pusher = appPusher yesod
+            triggerRes <- Pusher.trigger pusher [Pusher.Channel Pusher.Public "my-channel"] "bid_create" "my-data" Nothing
+
+            _ <- liftIO $ Import.print $ show triggerRes
+
+            return $ Right bidId
+
     in if validate
         then do
         let itemDbId = bidItemDbId bid
@@ -61,11 +72,11 @@ save (maybeBidId, bid) validate =
                                             { cbsItem = item
                                             }
 
-                yesod <- getYesod
-                action <- liftIO $ atomically $ do
-                    let appBidPlace_ = appBidPlace yesod
-                    lockBid appBidPlace_
-                    unlockBid appBidPlace_
+--                yesod <- getYesod
+--                action <- liftIO $ atomically $ do
+--                    let appBidPlace_ = appBidPlace yesod
+--                    lockBid appBidPlace_
+--                    unlockBid appBidPlace_
 
 
                 -- @todo: Run this inside STM.
