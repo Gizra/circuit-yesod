@@ -12,7 +12,7 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidVPrivileges(..), BidViaForm(..), BidDeleted(..))
+import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidPrivileges(..), BidViaForm(..), BidDeleted(..))
 import Models.BidUtility (bidPostForm, save)
 import Models.Item (Item(..))
 import Models.ItemUtility (mkItem, mkBid)

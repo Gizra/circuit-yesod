@@ -42,7 +42,7 @@ data BidViaForm = BidViaForm
     , bvfBidderNumber :: Maybe Int
     } deriving (Show, Generic)
 
-data BidVPrivileges
+data BidPrivileges
   = NonPrivileged
   | Author
   | Privileged
@@ -50,7 +50,7 @@ data BidVPrivileges
 
 
 data BidEntityWithPrivileges =
-  BidEntityWithPrivileges (BidId, Bid) BidVPrivileges
+  BidEntityWithPrivileges (BidId, Bid) BidPrivileges
   deriving (Show, Generic)
 
 instance ToJSON BidEntityWithPrivileges where

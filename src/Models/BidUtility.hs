@@ -5,6 +5,7 @@
 module Models.BidUtility where
 
 import Data.Aeson.Types
+import Data.Aeson.Text (encodeToLazyText)
 import Data.Either
 import qualified Data.Map.Strict as Map
 import qualified Network.Pusher as Pusher
@@ -13,7 +14,7 @@ import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import
 import Types (Amount(..), BidDelete(..), BidType(..))
-import Models.Bid (Bid(..), BidViaForm(..), BidDeleted(..), BidId)
+import Models.Bid (Bid(..), BidViaForm(..), BidDeleted(..), BidId, BidPrivileges(..), BidEntityWithPrivileges(..))
 import Models.Item (Item(..))
 import Models.ItemUtility (mkItem)
 
@@ -54,9 +55,14 @@ save (maybeBidId, bid) validate =
             -- Trigger Pusher.
             yesod <- getYesod
             let pusher = appPusher yesod
-            triggerRes <- Pusher.trigger pusher [Pusher.Channel Pusher.Public "my-channel"] "bid_create" "my-data" Nothing
 
-            _ <- liftIO $ Import.print $ show triggerRes
+                bidTuple = (bidId, bid)
+                -- @todo: Why if I try to use `.` it says ambigous with `Perdule` vs `Import`?
+                encodedBidPrivileged = Import.toStrict $ encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
+
+            triggerRes <- Pusher.trigger pusher [Pusher.Channel Pusher.Public "my-channel"] "bid_create" encodedBidPrivileged Nothing
+
+            -- _ <- liftIO $ Import.print $ show triggerRes
 
             return $ Right bidId
 
