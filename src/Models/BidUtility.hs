@@ -4,6 +4,7 @@
 
 module Models.BidUtility where
 
+import           Control.Concurrent     (forkIO)
 import Data.Aeson.Types
 import Data.Aeson.Text (encodeToLazyText)
 import Data.Either
@@ -60,9 +61,11 @@ save (maybeBidId, bid) validate =
                 -- @todo: Why if I try to use `.` it says ambigous with `Perdule` vs `Import`?
                 encodedBidPrivileged = Import.toStrict $ encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
 
-            triggerRes <- Pusher.trigger pusher [Pusher.Channel Pusher.Public "my-channel"] "bid_create" encodedBidPrivileged Nothing
-
-            -- _ <- liftIO $ Import.print $ show triggerRes
+            -- @todo: forking, means it doesn't block the request?
+            liftIO $ forkIO $ do
+                res <- Pusher.trigger pusher [Pusher.Channel Pusher.Public "my-channel"] "bid_create" encodedBidPrivileged Nothing
+                -- Import.print $ show res
+                return ()
 
             return $ Right bidId
 
@@ -74,9 +77,10 @@ save (maybeBidId, bid) validate =
             Nothing -> return $ Left "Item of Bid not found"
             Just (Entity _ itemDb) -> do
                 item <- mkItem (itemDbId, itemDb)
-                let contextForBidSave = ContextForBidSave
-                                            { cbsItem = item
-                                            }
+                let contextForBidSave =
+                        ContextForBidSave
+                            { cbsItem = item
+                            }
 
 --                yesod <- getYesod
 --                action <- liftIO $ atomically $ do
@@ -88,6 +92,7 @@ save (maybeBidId, bid) validate =
                 -- @todo: Run this inside STM.
                 let validations =
                         [ positiveAmount
+                        , higherAmount
                         ]
 
                     hasError = foldl
@@ -154,17 +159,29 @@ positiveAmount context (_, bid) =
 -}
 higherAmount :: ContextForBidSave -> (Maybe BidId, Bid) -> Maybe Text
 higherAmount context (maybeBidId, bid) =
-    -- @todo: Implement
-    Nothing
---    -- @todo: If Just Bid ID, ignore it.
---    let (Amount amount) = bidAmount bid
---    count_ <- runDB $ count [BidDbItemId ==. bidItemDbId bid, BidDbAmount >=. amount]
---    return $
---        if count_ == 0
---        then
---            Nothing
---        else
---            Just "Bid amount should be higher than other bids"
+    let item = (cbsItem context)
+        highestBidAmount =
+            Map.foldl' (\accum bid_ ->
+                            case (bidDeleted bid_) of
+                                NotDeleted ->
+                                    let amount = getAmount $ bidAmount bid_
+                                    in if amount  > accum
+                                        then amount
+                                        else accum
+                                _ ->
+                                    accum
+                       )
+                       0
+                       (itemMailBids item)
+
+        currentBidAmount = getAmount $ bidAmount bid
+
+    in if (currentBidAmount <= highestBidAmount)
+        then
+            Just "Bid amount should be higher than other bids"
+        else
+            Nothing
+
 
 
 
@@ -175,6 +192,7 @@ bidPostForm itemDbId = renderDivs $ BidViaForm
     <*> areq amountField "Amount" (Just $ Amount 100)
     -- @todo: Add Bidder number as select list
     <*> pure Nothing
+
 
 
 
