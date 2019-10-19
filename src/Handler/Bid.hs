@@ -36,16 +36,9 @@ getBidR bidId = do
                 , bidctxPrivileges = Models.Bid.Privileged
                 }
 
-            -- @todo: How to change just bidctxPrivileges?
-            bidctxNonPrivileged = BidContext
-                { bidctxBid = (bidId, bid)
-                , bidctxAuthor = author
-                , bidctxPrivileges = Models.Bid.NonPrivileged
-                }
-
         let bidTuple = (bidId, bid)
             encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctx)
-            encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctxNonPrivileged)
+            encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges $ bidctx { bidctxPrivileges = Models.Bid.NonPrivileged })
         defaultLayout $ do
                setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
                $(widgetFile "bid")
