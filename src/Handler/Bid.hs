@@ -12,7 +12,7 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidPrivileges(..), BidViaForm(..), BidDeleted(..))
+import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidPrivileges(..), BidViaForm(..), BidDeleted(..), BidContext(..))
 import Models.BidUtility (bidPostForm, save)
 import Models.Item (Item(..))
 import Models.ItemUtility (mkItem, mkBid)
@@ -28,9 +28,24 @@ getBidR bidId = do
         let itemId = bidItemDbId bid
         itemDb <- runDB $ get404 itemId
         item <- mkItem (itemId, itemDb)
+
+        author <- runDB $ get404 $ bidAuthor bid
+        let bidctx = BidContext
+                { bidctxBid = (bidId, bid)
+                , bidctxAuthor = author
+                , bidctxPrivileges = Models.Bid.Privileged
+                }
+
+            -- @todo: How to change just bidctxPrivileges?
+            bidctxNonPrivileged = BidContext
+                { bidctxBid = (bidId, bid)
+                , bidctxAuthor = author
+                , bidctxPrivileges = Models.Bid.NonPrivileged
+                }
+
         let bidTuple = (bidId, bid)
-            encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
-            encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.NonPrivileged)
+            encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctx)
+            encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctxNonPrivileged)
         defaultLayout $ do
                setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
                $(widgetFile "bid")

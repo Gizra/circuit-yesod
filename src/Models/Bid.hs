@@ -49,22 +49,25 @@ data BidPrivileges
   deriving (Show, Generic)
 
 
+data BidContext = BidContext
+    { bidctxBid :: (BidId, Bid)
+    , bidctxAuthor :: User
+    , bidctxPrivileges :: BidPrivileges
+    }
+
 data BidEntityWithPrivileges =
-  BidEntityWithPrivileges (BidId, Bid) BidPrivileges
-  deriving (Show, Generic)
+  BidEntityWithPrivileges BidContext
 
 instance ToJSON BidEntityWithPrivileges where
-  toJSON (BidEntityWithPrivileges (bidId, bid) bidVPrivileges) =
-    let jsonDefault = ["id" .= fromSqlKey bidId, "amount" .= bidAmount bid]
+  toJSON (BidEntityWithPrivileges bidContext) =
+    let (bidId, bid) =  bidctxBid bidContext
+        jsonDefault = ["id" .= fromSqlKey bidId, "amount" .= bidAmount bid]
         jsonPerViewAccess =
-          case bidVPrivileges of
+          case bidctxPrivileges bidContext  of
             NonPrivileged -> []
             Author -> []
             Privileged ->
-
-            -- @todo: How to get the UUID now?
-                []
-            -- ["author_uuid" .= snd (bidAuthor bid)]
+                ["author_uuid" .= (userUuid $ bidctxAuthor bidContext)]
     in object $ jsonDefault <> jsonPerViewAccess
 
 instance ToJSON Amount where

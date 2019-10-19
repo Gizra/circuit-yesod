@@ -15,7 +15,7 @@ import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import
 import Types (Amount(..), BidDelete(..), BidType(..))
-import Models.Bid (Bid(..), BidViaForm(..), BidDeleted(..), BidId, BidPrivileges(..), BidEntityWithPrivileges(..))
+import Models.Bid (Bid(..), BidViaForm(..), BidDeleted(..), BidId, BidPrivileges(..), BidEntityWithPrivileges(..), BidContext(..))
 import Models.Item (Item(..))
 import Models.ItemUtility (mkItem)
 
@@ -57,9 +57,14 @@ save (maybeBidId, bid) validate =
             yesod <- getYesod
             let pusher = appPusher yesod
 
-                bidTuple = (bidId, bid)
+            author <- runDB $ get404 $ bidAuthor bid
+            let bidctx = BidContext
+                    { bidctxBid = (bidId, bid)
+                    , bidctxAuthor = author
+                    , bidctxPrivileges = Privileged
+                    }
                 -- @todo: Why if I try to use `.` it says ambigous with `Perdule` vs `Import`?
-                encodedBidPrivileged = Import.toStrict $ encodeToLazyText $ toJSON (BidEntityWithPrivileges bidTuple Models.Bid.Privileged)
+                encodedBidPrivileged = Import.toStrict $ encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctx)
 
             -- @todo: forking, means it doesn't block the request?
             liftIO $ forkIO $ do
