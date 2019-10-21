@@ -25,9 +25,16 @@ packages:
       sha256: fb7552de9e5dcf149061bf5e81ee0bf0a3de63447befbe13e19bf343e60a39c7
   original:
     hackage: pusher-http-haskell-1.5.1.11@sha256:d12d0900ccfbf31bac39e362c2d6997c72285006cd2b7a1c307bd419a90ef4b2,2687
+- completed:
+    hackage: haskell-src-exts-1.20.3@sha256:83ae523bbec907a42c043de1f5bbf4c1554e7c3b898af07bb1ce6e80eaa282ec,4589
+    pantry-tree:
+      size: 92343
+      sha256: 44f923980e915c41b96f326d93ef19c0b51e0799fe2370d7604d16c8cbad9151
+  original:
+    hackage: haskell-src-exts-1.20.3@sha256:83ae523bbec907a42c043de1f5bbf4c1554e7c3b898af07bb1ce6e80eaa282ec,4589
 snapshots:
 - completed:
-    size: 506735
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/12/19.yaml
-    sha256: 78de20c2fce471a4c4a19e935e216538e7f0308f6f15ad72aedc5484de45f09b
-  original: lts-12.19
+    size: 524130
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/10.yaml
+    sha256: 04841e0397d7ce6364f19359fce89aa45ca8684609d665845db80d398002baa9
+  original: lts-14.10
