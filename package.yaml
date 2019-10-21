@@ -48,6 +48,9 @@ dependencies:
   - lucid
   - pusher-http-haskell
 
+# Haddoc
+  - haskell-src-exts
+
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.
 library:

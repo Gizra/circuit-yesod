@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="http2-1.6.5">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.cache/intellij-haskell/lib/circuit-yesod/http2-1.6.5" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$USER_HOME$/.cache/intellij-haskell/lib/circuit-yesod/http2-1.6.5" />
+    </SOURCES>
+  </library>
+</component>

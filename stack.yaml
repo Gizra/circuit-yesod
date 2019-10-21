@@ -44,7 +44,7 @@ extra-deps:
   - github: chrisdone/yesod-lucid
     commit: de8b455a6efcc02b95d5f6363a29044e230dc75f
   - pusher-http-haskell-1.5.1.11@sha256:d12d0900ccfbf31bac39e362c2d6997c72285006cd2b7a1c307bd419a90ef4b2,2687
-  - haskell-src-exts-1.20.3@sha256:83ae523bbec907a42c043de1f5bbf4c1554e7c3b898af07bb1ce6e80eaa282ec,4589
+
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
