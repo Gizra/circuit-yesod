@@ -38,6 +38,16 @@ mkItem (itemDbId, itemDb) = do
     }
 
 
+-- @todo: Where to place those?
+
+{-| Cache Users.
+-}
+newtype CachedUser = CachedUser { unCachedUser :: Maybe User }
+    deriving Typeable
+
+cachedMaybeUser :: UserId -> Handler (Maybe User)
+cachedMaybeUser userId = fmap unCachedUser $ cached $ fmap CachedUser (runDB $ get userId)
+
 {-| To prevent import cycle error, we have mkBid here.
 
 @todo: Is there a better way?
@@ -54,7 +64,7 @@ mkBid bidDb = do
             Right $ ChangedToFloor userId
           _ -> Left "Invalid Bid delete state"
   let authorId = bidDbAuthor bidDb
-  maybeAuthor <- runDB $ get authorId
+  maybeAuthor <- cachedMaybeUser authorId
   case (maybeAuthor, eitherBidDeleted) of
     (_, Left err) -> return $ Left err
     (Nothing, _) ->
