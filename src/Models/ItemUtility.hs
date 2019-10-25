@@ -46,7 +46,10 @@ newtype CachedUser = CachedUser { unCachedUser :: Maybe User }
     deriving Typeable
 
 cachedMaybeUser :: UserId -> Handler (Maybe User)
-cachedMaybeUser userId = fmap unCachedUser $ cached $ fmap CachedUser (runDB $ get userId)
+cachedMaybeUser userId = fmap unCachedUser $ cachedBy userIdAsByteString $ fmap CachedUser (runDB $ get userId)
+    where userIdAsByteString = encodeUtf8 $ pack $ show userId
+
+
 
 {-| To prevent import cycle error, we have mkBid here.
 
