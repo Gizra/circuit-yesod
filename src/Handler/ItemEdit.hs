@@ -11,8 +11,6 @@ import Database.Persist.Sql (fromSqlKey)
 import Import
 
 import qualified Data.Map.Strict as Map
--- @todo: Avoid this import
-import Models.Bid (Bid(..))
 import Models.Item (Item(..))
 import Models.ItemUtility (ivfForm, mkItem)
 

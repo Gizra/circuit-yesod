@@ -10,7 +10,7 @@ import Database.Persist.Sql (fromSqlKey)
 import Import
 
 import qualified Data.Map.Strict as Map
--- @todo: Avoid this import
+-- @todo: Avoid those import
 import Models.Bid (Bid(..))
 import Models.BidUtility (bidPostForm, getAmount)
 import Models.Item (Item(..))
@@ -18,6 +18,7 @@ import Models.ItemUtility (mkItem)
 
 getItemR :: Text -> Handler Html
 getItemR itemUuid_ = do
+    mUser <- maybeAuth
     itemDb <- runDB $ getBy404 $ UniqueItemUuid itemUuid_
     let (Entity itemDbId itemDb_) = itemDb
     item <- mkItem (itemDbId, itemDb_)

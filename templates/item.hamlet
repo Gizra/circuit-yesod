@@ -3,10 +3,12 @@
     <h1>
         Item
 
-    <p>
-        <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>
-            ^{widget}
-            <button>Submit
+
+    $maybe _ <- mUser
+        <p>
+            <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>
+                ^{widget}
+                <button>Submit
 
     $if null bidsList
         <p>No Bids
