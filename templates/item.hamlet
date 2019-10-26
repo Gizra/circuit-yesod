@@ -3,7 +3,6 @@
     <h1>
         Item
 
-
     $maybe _ <- mUser
         <p>
             <form method=post action=@{BidPostR itemDbId} enctype=#{enctype}>

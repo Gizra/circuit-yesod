@@ -35,6 +35,7 @@ ItemDb sql=item
     UniqueItemUuid uuid
     deriving Show
 BidderInfoDb -- We add the `Db` suffix, as we'll re construct it later on to a `BidderInfo`
+    type_ BidderInfoDbType default='BidderInfoDbWebsite'
     saleId SaleId
     userId UserId
     number Int

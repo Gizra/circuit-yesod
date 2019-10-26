@@ -59,3 +59,14 @@ data BidDelete
   deriving (Show, Eq, Enum, Bounded, Read, Generic)
 
 derivePersistField "BidDelete"
+
+
+-- Bidder Info
+
+data BidderInfoDbType =
+    BidderInfoDbWebsite
+    | BidderInfoDbMail
+    | BidderInfoDbAgent
+    deriving (Show, Eq, Enum, Bounded, Read, Generic)
+
+derivePersistField "BidderInfoDbType"
