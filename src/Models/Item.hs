@@ -18,20 +18,20 @@ import Types (Amount(..), ItemStatus(..))
 
 type ItemId = ItemDbId
 
-data Item = Item
-  { itemUuid :: Text
-  , itemMailBids :: Map.Map BidId Bid
-  , itemOpeningPrice :: Amount
-  , itemStatus ::  ItemStatus
-  } deriving (Show, Generic)
-
+data Item =
+    Item
+        { itemUuid :: Text
+        , itemMailBids :: Map.Map BidId Bid
+        , itemOpeningPrice :: Amount
+        , itemStatus :: ItemStatus
+        }
+    deriving (Show, Generic)
 
 {-| Item submitted via form, abbreviated as `ivf`.
 -}
-data ItemViaForm = ItemViaForm
-    { ivfOpeningPrice :: Amount
-    , ivfStatus ::  ItemStatus
-    } deriving (Show, Generic)
-
-
-
+data ItemViaForm =
+    ItemViaForm
+        { ivfOpeningPrice :: Amount
+        , ivfStatus :: ItemStatus
+        }
+    deriving (Show, Generic)

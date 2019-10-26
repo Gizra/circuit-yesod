@@ -6,16 +6,15 @@
 
 module Handler.Item where
 
-import Import
 import Database.Persist.Sql (fromSqlKey)
+import Import
 
+import qualified Data.Map.Strict as Map
 -- @todo: Avoid this import
 import Models.Bid (Bid(..))
 import Models.BidUtility (bidPostForm, getAmount)
 import Models.Item (Item(..))
 import Models.ItemUtility (mkItem)
-import qualified Data.Map.Strict as Map
-
 
 getItemR :: Text -> Handler Html
 getItemR itemUuid_ = do
@@ -24,7 +23,6 @@ getItemR itemUuid_ = do
     item <- mkItem (itemDbId, itemDb_)
     -- Generate the form to be displayed
     (widget, enctype) <- generateFormPost (bidPostForm itemDbId)
-
     -- Show last 10 Bids.
     let bidsList = take 10 $ reverse $ Map.toList (itemMailBids item)
     defaultLayout $ do

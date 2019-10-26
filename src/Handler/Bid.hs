@@ -8,41 +8,45 @@
 module Handler.Bid where
 
 import Data.Aeson.Text (encodeToLazyText)
-import Database.Persist.Sql (fromSqlKey, toSqlKey)
+import Database.Persist.Sql (fromSqlKey)
 import Import
 
 -- @todo: Avoid this import
-import Models.Bid (Bid(..), BidEntityWithPrivileges(..), BidId, BidPrivileges(..), BidViaForm(..), BidDeleted(..), BidContext(..))
+import Models.Bid
+    ( Bid(..)
+    , BidContext(..)
+    , BidDeleted(..)
+    , BidEntityWithPrivileges(..)
+    , BidId
+    , BidPrivileges(..)
+    , BidViaForm(..)
+    )
 import Models.BidUtility (bidPostForm, save)
 import Models.Item (Item(..))
-import Models.ItemUtility (mkItem, mkBid)
+import Models.ItemUtility (mkBid, mkItem)
 import Types (BidType(BidTypeMail))
 
 getBidR :: BidId -> Handler Html
 getBidR bidId = do
-  bidDb <- runDB $ get404 bidId
-  eitherBid <- mkBid bidDb
-  case eitherBid of
-    Left err -> invalidArgs [err]
-    Right bid -> do
-        let itemId = bidItemDbId bid
-        itemDb <- runDB $ get404 itemId
-        item <- mkItem (itemId, itemDb)
-
-        author <- runDB $ get404 $ bidAuthor bid
-        let bidctx = BidContext
-                { bidctxBid = (bidId, bid)
-                , bidctxAuthor = author
-                , bidctxPrivileges = Models.Bid.Privileged
-                }
-
-        let bidTuple = (bidId, bid)
-            encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctx)
-            encodedBidNonPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges $ bidctx { bidctxPrivileges = Models.Bid.NonPrivileged })
-        defaultLayout $ do
-               setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
-               $(widgetFile "bid")
-
+    bidDb <- runDB $ get404 bidId
+    eitherBid <- mkBid bidDb
+    case eitherBid of
+        Left err -> invalidArgs [err]
+        Right bid -> do
+            let itemId = bidItemDbId bid
+            itemDb <- runDB $ get404 itemId
+            item <- mkItem (itemId, itemDb)
+            author <- runDB $ get404 $ bidAuthor bid
+            let bidCtx =
+                    BidContext
+                        {bidctxBid = (bidId, bid), bidctxAuthor = author, bidctxPrivileges = Models.Bid.Privileged}
+            let encodedBidPrivileged = encodeToLazyText $ toJSON (BidEntityWithPrivileges bidCtx)
+                encodedBidNonPrivileged =
+                    encodeToLazyText $
+                    toJSON (BidEntityWithPrivileges $ bidCtx {bidctxPrivileges = Models.Bid.NonPrivileged})
+            defaultLayout $ do
+                setTitle . toHtml $ "Bid #" <> show (fromSqlKey bidId)
+                $(widgetFile "bid")
 
 postBidPostR :: ItemDbId -> Handler Html
 postBidPostR itemId = do
@@ -59,15 +63,14 @@ postBidPostR itemId = do
                     defaultLayout $ do
                         setTitle "Bid post"
                         $(widgetFile "bid-post")
-        _ -> defaultLayout
-              [whamlet|
+        _ ->
+            defaultLayout
+                [whamlet|
                   <p>Invalid input, let's try again.
                   <form method=post action=@{BidPostR itemId} enctype=#{enctype}>
                       ^{widget}
                       <button>Submit
               |]
-
-
 
 -- @todo: Should this be here, since it returns a Handler?
 bidViaPostToBid :: BidViaForm -> Handler Bid
@@ -80,12 +83,11 @@ bidViaPostToBid bvf = do
     now <- liftIO getCurrentTime
     return $
         Bid
-        { bidItemDbId = itemDbId
-        , bidType = BidTypeMail
-        , bidAmount = bvfAmount bvf
-        , bidAuthor = userId
-        , bidBidderNumber = bvfBidderNumber bvf
-        , bidDeleted = NotDeleted
-        , bidCreated = now
-        }
-
+            { bidItemDbId = itemDbId
+            , bidType = BidTypeMail
+            , bidAmount = bvfAmount bvf
+            , bidAuthor = userId
+            , bidBidderNumber = bvfBidderNumber bvf
+            , bidDeleted = NotDeleted
+            , bidCreated = now
+            }
