@@ -54,8 +54,8 @@ save (maybeBidId, bid) validate =
             _ <-
                 atomically
                     (do appBidPlaceSet <- readTVar $ appBidPlace yesod
-                        let isLocked = Set.member itemDbId appBidPlaceSet
-                        unless (isLocked == False) retry
+                        let isNotLocked = Set.notMember itemDbId appBidPlaceSet
+                        unless isNotLocked retry
                         writeTVar (appBidPlace yesod) (Set.insert itemDbId appBidPlaceSet))
             mitemDb <- runDB $ selectFirst [ItemDbId ==. itemDbId] []
             case mitemDb of
