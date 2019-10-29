@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Models.BidUtility where
+module Models.BidUtility
+    ( bidPostForm
+    , getAmount
+    , save
+    ) where
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.STM (retry)
