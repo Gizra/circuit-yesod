@@ -8,65 +8,62 @@ import GHC.Generics
 import Prelude
 
 newtype Amount =
-  Amount Int
-  deriving (Show, Generic)
+    Amount Int
+    deriving (Show, Generic)
 
--- @todo: Move to FieldTypes?
 data SaleStatus
-  = SaleStatusNotStarted
-  | SaleStatusPreLive
-  | SaleStatusLive
-  | SalesStatusLiveEnded
-  | SaleStatusClosed
-  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+    = SaleStatusNotStarted
+    | SaleStatusPreLive
+    | SaleStatusLive
+    | SalesStatusLiveEnded
+    | SaleStatusClosed
+    deriving (Show, Eq, Enum, Read)
 
 derivePersistField "SaleStatus"
 
 data MailType
-  = MailTypeObscured
-  | MailTypeRegular
-  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+    = MailTypeObscured
+    | MailTypeRegular
+    deriving (Show, Eq, Enum, Read)
 
 derivePersistField "MailType"
 
 data ItemStatus
-  = ItemStatusPending
-  | ItemStatusActive
-  | ItemStatusGoing
-  | ItemStatusGone
-  | ItemStatusSold
-  | ItemStatusUnsold
-  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+    = ItemStatusPending
+    | ItemStatusActive
+    | ItemStatusGoing
+    | ItemStatusGone
+    | ItemStatusSold
+    | ItemStatusUnsold
+    deriving (Show, Eq, Enum, Read)
 
 derivePersistField "ItemStatus"
 
 data BidType
-  = BidTypeMail
-  | BidTypeAgent
-  | BidTypeAutoMail
-  | BidTypeAutoAgent
-  | BidTypeLive
-  | BidTypePostLive
-  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+    = BidTypeMail
+    | BidTypeAgent
+    | BidTypeAutoMail
+    | BidTypeAutoAgent
+    | BidTypeLive
+    | BidTypePostLive
+    deriving (Show, Eq, Enum, Read)
 
 derivePersistField "BidType"
 
 data BidDelete
-  = BidDeleteByStaff
-  | BidDeleteChangedToFloor
+    = BidDeleteByStaff
+    | BidDeleteChangedToFloor
   -- @todo
   -- | BidDeleteSuspendedDueToGroup
-  deriving (Show, Eq, Enum, Bounded, Read, Generic)
+    deriving (Show, Eq, Enum, Read)
 
 derivePersistField "BidDelete"
 
-
 -- Bidder Info
-
-data BidderInfoDbType =
-    BidderInfoDbWebsite
+data BidderInfoDbType
+    = BidderInfoDbAgent
     | BidderInfoDbMail
-    | BidderInfoDbAgent
-    deriving (Show, Eq, Enum, Bounded, Read, Generic)
+    | BidderInfoDbWebsite
+    deriving (Show, Eq, Enum, Read)
 
 derivePersistField "BidderInfoDbType"
