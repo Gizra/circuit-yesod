@@ -227,5 +227,6 @@
     <orderEntry type="library" name="profunctors-5.3" level="project" />
     <orderEntry type="library" name="adjunctions-4.4" level="project" />
     <orderEntry type="library" name="invariant-0.5.3" level="project" />
+    <orderEntry type="library" name="haskell-src-exts-1.21.1" level="project" />
   </component>
 </module>

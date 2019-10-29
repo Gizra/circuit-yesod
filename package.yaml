@@ -47,6 +47,8 @@ dependencies:
   - yesod-lucid
   - lucid
   - pusher-http-haskell
+  # Does it really not exist in Yesod itself?
+  - stm
 
 # Haddoc
   - haskell-src-exts

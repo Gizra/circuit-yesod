@@ -23,6 +23,7 @@ module Application
 
 import Control.Monad.Logger (liftLoc, runLoggingT)
 import Database.Persist.Postgresql (createPostgresqlPool, pgConnStr, pgPoolSize, runSqlPool)
+import qualified Data.Set as Set
 import Import
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.HTTP.Client.TLS (getGlobalManager)
@@ -79,7 +80,7 @@ makeFoundation appSettings
              then staticDevel
              else static)
             (appStaticDir appSettings)
-    appBidPlace <- newEmptyTMVarIO
+    appBidPlace <- atomically (newTVar Set.empty)
     let pusherCredentials = appPusherCredentials appSettings
         appPusher = getPusherWithConnManager appHttpManager Nothing Nothing pusherCredentials
         -- We need a log function to create a connection pool. We need a connection

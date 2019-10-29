@@ -4,12 +4,14 @@
 
 module Models.BidUtility where
 
-import Control.Concurrent (forkIO)
+import Control.Concurrent (forkIO, threadDelay)
+import Control.Concurrent.STM (retry)
 import Data.Aeson.Text (encodeToLazyText)
 import Data.Aeson.Types
 import Data.Either
 import qualified Data.Map.Strict as Map
 import Data.Monoid
+import qualified Data.Set as Set
 import Database.Persist.Sql (fromSqlKey)
 import GHC.Generics
 import Import
@@ -40,76 +42,85 @@ data ContextForBidSave =
         }
 
 -- Crud
-lockBid :: TMVar () -> STM ()
-lockBid var = takeTMVar var
-
-unlockBid :: TMVar () -> STM ()
-unlockBid var = putTMVar var ()
-
 {-| Save a Bid.
 -}
 save :: (Maybe BidId, Bid) -> Bool -> Handler (Either Text BidId)
 save (maybeBidId, bid) validate =
-    let bidDb = getDbValues bid
-        saveDo = do
-            bidId <-
-                case maybeBidId of
-                    Just bidId -> do
-                        _ <- runDB $ replace bidId bidDb
-                        return bidId
-                    Nothing -> do
-                        bidId <- runDB $ insert bidDb
-                        return bidId
-            -- Trigger Pusher.
+    if validate
+        then do
             yesod <- getYesod
-            let pusher = appPusher yesod
-            author <- runDB $ get404 $ bidAuthor bid
-            let bidctx = BidContext {bidctxBid = (bidId, bid), bidctxAuthor = author, bidctxPrivileges = Privileged}
-                -- @todo: Why if I try to use `.` it says ambigous with `Perdule` vs `Import`?
-                encodedBidPrivileged = Import.toStrict $ encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctx)
-            -- @todo: forking, means it doesn't block the request?
-            liftIO $
-                forkIO $ do
-                    res <-
-                        Pusher.trigger
-                            pusher
-                            [Pusher.Channel Pusher.Public "my-channel"]
-                            "bid_create"
-                            encodedBidPrivileged
-                            Nothing
-                -- Import.print $ show res
-                    return ()
-            return $ Right bidId
-     in if validate
-            then do
-                let itemDbId = bidItemDbId bid
-                mitemDb <- runDB $ selectFirst [ItemDbId ==. itemDbId] []
-                case mitemDb of
-                    Nothing -> return $ Left "Item of Bid not found"
-                    Just (Entity _ itemDb) -> do
-                        item <- mkItem (itemDbId, itemDb)
-                        let contextForBidSave = ContextForBidSave {cbsItem = item}
-                -- @todo: Run this inside STM.
-                        let validations = [positiveAmount, higherAmount]
-                            hasError =
-                                foldl
-                                    (\accum func ->
-                                         if isJust accum
-                                        -- We found the first error, so we can stop validating.
-                                             then accum
-                                             else func contextForBidSave (maybeBidId, bid))
-                                    Nothing
-                                    validations
-                        case hasError of
-                            Nothing -> saveDo
-                            Just err -> return $ Left err
-            else saveDo
+            let itemDbId = bidItemDbId bid
+            -- Lock saving.
+            _ <-
+                atomically
+                    (do appBidPlaceSet <- readTVar $ appBidPlace yesod
+                        let isLocked = Set.member itemDbId appBidPlaceSet
+                        unless (isLocked == False) retry
+                        writeTVar (appBidPlace yesod) (Set.insert itemDbId appBidPlaceSet))
+            mitemDb <- runDB $ selectFirst [ItemDbId ==. itemDbId] []
+            case mitemDb of
+                Nothing -> return $ Left "Item of Bid not found"
+                Just (Entity _ itemDb) -> do
+                    item <- mkItem (itemDbId, itemDb)
+                    let contextForBidSave = ContextForBidSave {cbsItem = item}
+                    let hasError = validateBidBeforeSave (maybeBidId, bid) contextForBidSave
+                    case hasError of
+                        Nothing -> do
+                            res <- saveDo (maybeBidId, bid)
+                            -- Release the lock.
+                            -- @todo: How to break lock after certain amount of time. e.g. if save caused an error.
+                            atomically
+                                (do appBidPlaceSet <- readTVar $ appBidPlace yesod
+                                    writeTVar (appBidPlace yesod) (Set.delete itemDbId appBidPlaceSet))
+                            return res
+                        Just err -> return $ Left err
+        else saveDo (maybeBidId, bid)
 
---                yesod <- getYesod
---                action <- liftIO $ atomically $ do
---                    let appBidPlace_ = appBidPlace yesod
---                    lockBid appBidPlace_
---                    unlockBid appBidPlace_
+validateBidBeforeSave :: (Maybe BidId, Bid) -> ContextForBidSave -> Maybe Text
+validateBidBeforeSave (maybeBidId, bid) contextForBidSave =
+    let validations = [positiveAmount, higherAmount]
+     in foldl
+            (\accum func ->
+                 if isJust accum
+                    -- We found the first error, so we can stop validating.
+                     then accum
+                     else func contextForBidSave (maybeBidId, bid))
+            Nothing
+            validations
+
+{-| Do the actual saving to the DB.
+-}
+saveDo :: (Maybe BidId, Bid) -> Handler (Either Text BidId)
+saveDo (maybeBidId, bid) = do
+    let bidDb = getDbValues bid
+    bidId <-
+        case maybeBidId of
+            Just bidId -> do
+                _ <- runDB $ replace bidId bidDb
+                return bidId
+            Nothing -> do
+                bidId <- runDB $ insert bidDb
+                return bidId
+    -- Trigger Pusher.
+    yesod <- getYesod
+    let pusher = appPusher yesod
+    author <- runDB $ get404 $ bidAuthor bid
+    let bidctx = BidContext {bidctxBid = (bidId, bid), bidctxAuthor = author, bidctxPrivileges = Privileged}
+        -- @todo: Why if I try to use `.` it says ambigous with `Perdule` vs `Import`?
+        encodedBidPrivileged = Import.toStrict $ encodeToLazyText $ toJSON (BidEntityWithPrivileges bidctx)
+    -- @todo: forking, means it doesn't block the request?
+    liftIO $
+        forkIO $ do
+            res <-
+                Pusher.trigger
+                    pusher
+                    [Pusher.Channel Pusher.Public "my-channel"]
+                    "bid_create"
+                    encodedBidPrivileged
+                    Nothing
+            return ()
+    return $ Right bidId
+
 getDbValues :: Bid -> BidDb
 getDbValues bid =
     let (Amount amount) = bidAmount bid
@@ -137,7 +148,7 @@ positiveAmount context (_, bid) =
             case bidType bid of
                 BidTypeMail -> True
                 _ -> False
-    in if amount < 0
+     in if amount < 0
             then Just $ pack ("Bid amount must be a positive value, but it is " <> show amount)
             else if amount == 0 && zeroAllowed
                      then Just $ pack ("Bid amount must be above zero, but it is " <> show amount)
